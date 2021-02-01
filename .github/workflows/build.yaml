@@ -19,6 +19,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: 3.8
+
       - name: Build Conda Package
         shell: cmd
-        run: build_conda_package.bat
+        run: conda install conda-build && conda-build .
