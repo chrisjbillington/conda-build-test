@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+
+
+defaults:
+  run:
+    shell: bash
+
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set Variables for Conda Build
+        run: |
+          CONDA_INSTALLER=Miniconda3-latest-Windows-x86_64.exe
+          echo "CONDA_INSTALLER=$CONDA_INSTALLER" >> $GITHUB_ENV
+
+      - name: Conda Package (Windows)
+        shell: cmd
+        run: |
+          curl -LO https://repo.continuum.io/miniconda/%CONDA_INSTALLER%
+          %CONDA_INSTALLER% /S /D=%CD%\.miniconda && ^
+          .miniconda\Scripts\activate && ^
+          conda update -n base -c defaults conda && ^
+          conda install conda-build && ^
+          conda-build .
