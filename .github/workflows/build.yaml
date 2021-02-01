@@ -19,19 +19,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Set Variables for Conda Build
-        run: |
-          CONDA_INSTALLER=Miniconda3-latest-Windows-x86_64.exe
-          echo "CONDA_INSTALLER=$CONDA_INSTALLER" >> $GITHUB_ENV
-
       - name: Build Conda Package
         shell: cmd
-        run: |
-          curl -LO https://repo.continuum.io/miniconda/%CONDA_INSTALLER% && ^
-          %CONDA_INSTALLER% /S /D=%CD%\.miniconda && ^
-          .miniconda\Scripts\activate && ^
-          conda update -n base -c defaults conda && ^
-          conda create -n py3.8 python=3.8 && ^
-          conda activate py3.8 && ^
-          conda install conda-build && ^
-          conda-build .
+        run: build_conda_package.bat
