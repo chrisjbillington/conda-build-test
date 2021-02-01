@@ -19,12 +19,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-update-conda: true
-          python-version: 3.8
-
       - name: Build Conda Package
         shell: cmd /C CALL {0}
-        run: >-
-          conda install conda-build && conda-build .
+        run: |
+          SET CONDA_INSTALLER=Miniconda3-latest-Windows-x86_64.exe && ^
+          curl -LO https://repo.continuum.io/miniconda/%CONDA_INSTALLER% && ^
+          %CONDA_INSTALLER% /S /D=%CD%\.miniconda && ^
+          .miniconda\Scripts\activate && ^
+          conda update -n base -c defaults conda && ^
+          conda create -n py3.8 python=3.8 && ^
+          conda activate py3.8 && ^
+          conda install conda-build && ^
+          conda-build .
