@@ -25,5 +25,6 @@ jobs:
           python-version: 3.8
 
       - name: Build Conda Package
-        shell: cmd
-        run: conda install conda-build && conda-build .
+        shell: cmd /C CALL {0}
+        run: >-
+          conda install conda-build && conda-build .
