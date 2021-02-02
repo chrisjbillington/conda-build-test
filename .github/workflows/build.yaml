@@ -8,18 +8,18 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: macos-11.0
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - uses: conda-incubator/setup-miniconda@v2
 
       - name: Fix osx nonsense
         run: |
           sudo rm -rf /Library/Developer/CommandLineTools
           xcode-select --install
-
-      - uses: conda-incubator/setup-miniconda@v2
-
+          
       - name: Build Conda Package
         shell: bash -l {0}
         run: conda install conda-build && conda-build .
