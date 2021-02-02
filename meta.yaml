@@ -1,13 +1,13 @@
 package:
-  name: labscript-c-extensions
-  version: 1.0.1
+  name: windows-curses
+  version: 2.2.0
 
 source:
-  url: https://files.pythonhosted.org/packages/e1/f0/7b2bdebab5b1b16c699caed0a1eb64f794122ce72265b6339c418b07ccec/labscript-c-extensions-1.0.1.tar.gz
-  sha256: a57976734a77bd921265ccd6f28d81a92b733339424e2cf29c4b9ff69ab573d7
+  url: https://files.pythonhosted.org/packages/05/84/d94ae11163653c4e6613a69f2857b47ac78c0e45a6c1515c51dc8c58106f/windows_curses-2.2.0-cp38-cp38-win32.whl
+  sha256: c4a8ce00e82635f06648cc40d99f470be4e3ffeb84f9f7ae9d6a4f68ec6361e7
 
 build:
-  script: {{ PYTHON }} -m pip install .
+  script: {{ PYTHON }} -m pip install windows_curses-2.2.0-cp38-cp38-win_amd64.whl
   number: 0
 
 requirements:
@@ -19,19 +19,12 @@ requirements:
     - python
     - pip
     - wheel
-    - setuptools
-    - wheel
-    - setuptools-scm
-    - cython
 
   run:
     - python
-    - importlib-metadata
-    - setuptools-scm
-    - numpy
 
 about:
-  home: http://labscriptsuite.org
-  summary: 'A module containing C-extensions for the labscript suite'
-  license: 'BSD'
+  home: https://github.com/zephyrproject-rtos/windows-curses
+  summary: 'Support for the standard curses module on Windows'
+  license: 'PSF2'
   license_file: LICENSE

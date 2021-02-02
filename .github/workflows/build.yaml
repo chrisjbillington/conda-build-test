@@ -8,17 +8,15 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: macos-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: 11.7
-
       - uses: conda-incubator/setup-miniconda@v2
 
       - name: Build Conda Package
-        shell: bash -l {0}
-        run: conda install conda-build && conda-build .
+        shell: cmd /C CALL {0}
+        run: |
+          conda install conda-build && ^
+          conda-build .
