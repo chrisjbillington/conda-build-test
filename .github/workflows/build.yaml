@@ -13,13 +13,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest
+
       - uses: conda-incubator/setup-miniconda@v2
 
       - name: Fix osx nonsense
         run: |
           sudo rm -rf /Library/Developer/CommandLineTools
           xcode-select --install
-          
+
       - name: Build Conda Package
         shell: bash -l {0}
         run: conda install conda-build && conda-build .
