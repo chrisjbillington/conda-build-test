@@ -3,7 +3,7 @@ package:
   version: 2.2.0
 
 source:
-  url: https://files.pythonhosted.org/packages/05/84/d94ae11163653c4e6613a69f2857b47ac78c0e45a6c1515c51dc8c58106f/windows_curses-2.2.0-cp38-cp38-win32.whl
+  url: https://files.pythonhosted.org/packages/09/e7/8770bfbe4e8264c86af7ab1d8320fcfc18fcd4955814ae698fafc985d26a/windows_curses-2.2.0-cp38-cp38-win_amd64.whl
   sha256: c4a8ce00e82635f06648cc40d99f470be4e3ffeb84f9f7ae9d6a4f68ec6361e7
 
 build:
