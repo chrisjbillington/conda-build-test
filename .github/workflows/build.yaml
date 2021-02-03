@@ -23,5 +23,7 @@ jobs:
           pip download git+https://github.com/zephyrproject-rtos/windows-curses/ && ^
           unzip windows-curses-2.2.0.zip && ^
           cd windows-curses && ^
-          conda install -c labscript-suite setuptools-conda && ^
+          conda install distlib importlib-metadata ripgrep setuptools-scm toml wheel && ^
+          conda install -n base conda-build conda-verify && ^
+          conda install -c labscript-suite --no-deps setuptools-conda && ^
           setuptools-conda build --from-downloaded-wheel .
