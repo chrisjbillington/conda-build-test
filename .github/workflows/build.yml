@@ -41,8 +41,8 @@ jobs:
           # - { os: windows-latest,  python: '3.9',   arch: x64,    conda: true }
           # - { os: windows-latest,  python: '3.8',   arch: x64,    conda: true }
 
-          # - { os: windows-latest,  python: '3.12',  arch: x86,    conda: false } # conda not yet available
-          - { os: windows-latest,  python: '3.11',  arch: x86,    conda: true } # conda not yet available
+          - { os: windows-latest,  python: '3.12',  arch: x86,    conda: false } # conda not yet available
+          # - { os: windows-latest,  python: '3.11',  arch: x86,    conda: true } # conda not yet available
           # - { os: windows-latest,  python: '3.10',  arch: x86,    conda: true }
           # - { os: windows-latest,  python: '3.9',   arch: x86,    conda: true }
           # - { os: windows-latest,  python: '3.8',   arch: x86,    conda: true }
