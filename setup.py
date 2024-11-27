@@ -1,5 +1,5 @@
 import os
-from setuptools import setup, Extension
+from setuptools import setup, find_packages, Extension
 
 EXT_MODULES = [
     Extension(
@@ -8,4 +8,10 @@ EXT_MODULES = [
     )
 ]
 
-setup(ext_modules=EXT_MODULES)
+setup(
+    name="hello",
+    version="0.1.0",
+    description="hello",
+    packages=find_packages(),
+    ext_modules=EXT_MODULES,
+)
