@@ -63,12 +63,6 @@ jobs:
           if [ $NOARCH == true ]; then
               CONDA_BUILD_ARGS+=" --noarch"
           fi
-          # Use newer compiler toolchains from conda-forge on macOS, Anaconda toolchains
-          # are too old for recent macOS SDKs. Alternative is to downgrade macOS SDK,
-          # see here: https://stackoverflow.com/a/69236332
-          if [[ $PURE == false && ${{ runner.os }} == macOS ]]; then
-              CONDA_BUILD_ARGS+=" --channels conda-forge"
-          fi
           echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
 
       - name: Install Miniconda
@@ -78,7 +72,7 @@ jobs:
           auto-update-conda: true
           python-version: ${{ matrix.python }}
           architecture: ${{ matrix.arch }}
-          miniconda-version: "latest"
+          miniforge-version: "latest"
 
       - name: Conda package (Unix)
         if: (matrix.conda && runner.os != 'Windows')
@@ -92,7 +86,7 @@ jobs:
         shell: cmd /C CALL {0}
         run: |
           conda install -c labscript-suite setuptools-conda && ^
-          setuptools-conda build --channels conda-forge %CONDA_BUILD_ARGS% --croot ${{ runner.temp }}\cb .
+          setuptools-conda build %CONDA_BUILD_ARGS% --croot ${{ runner.temp }}\cb .
 
       - name: Upload Artifact
         if: matrix.conda
