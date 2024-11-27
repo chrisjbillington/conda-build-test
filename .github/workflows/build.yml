@@ -40,12 +40,10 @@ jobs:
           echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
 
       - name: Use newer conda-forge compiler toolchains on macos
-        if: (matrix.conda && runner.os != 'macOS')
+        if: (runner.os == 'macOS' && matrix.conda && env.PURE == 'false')
         shell: bash
         run: |
-          if [ $PURE == false ]; then
-              CONDA_BUILD_ARGS+= --channels conda-forge
-          fi
+          CONDA_BUILD_ARGS+= --channels conda-forge
           echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
 
       - name: Install Miniconda
