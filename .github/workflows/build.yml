@@ -41,7 +41,7 @@ jobs:
           # - { os: windows-latest,  python: '3.9',   arch: x64,    conda: true }
           # - { os: windows-latest,  python: '3.8',   arch: x64,    conda: true }
 
-          - { os: windows-latest,  python: '3.12',  arch: x86,    conda: false } # conda not yet available
+          - { os: windows-latest,  python: '3.12',  arch: x86,    conda: true } # conda not yet available
           # - { os: windows-latest,  python: '3.11',  arch: x86,    conda: true } # conda not yet available
           # - { os: windows-latest,  python: '3.10',  arch: x86,    conda: true }
           # - { os: windows-latest,  python: '3.9',   arch: x86,    conda: true }
@@ -89,7 +89,6 @@ jobs:
         if: (matrix.conda && runner.os == 'Windows')
         shell: cmd /C CALL {0}
         run: |
-          conda config --add channels conda-forge && ^
           conda install -c labscript-suite setuptools-conda && ^
           setuptools-conda build %CONDA_BUILD_ARGS% --croot ${{ runner.temp }}\cb .
 
