@@ -11,7 +11,8 @@ build:
 
 requirements:
   build:
-    - clang
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
 
   host:
     - python

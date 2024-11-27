@@ -13,7 +13,7 @@ jobs:
       matrix:
         include:
           - { os: macos-13,         python: '3.12',  arch: x64 }
-          # - { os: ubuntu-latest,    python: '3.12',  arch: x64 }
+          - { os: ubuntu-latest,    python: '3.12',  arch: x64 }
 
     steps:
       - name: Checkout
@@ -31,21 +31,8 @@ jobs:
           auto-activate-base: true
           activate-environment: ""
 
-      - name: Setup macOS SDK
-        if: runner.os == 'macOS'
-        run: |
-          sudo xcode-select -s /Applications/Xcode_14.2.app
-          echo "CONDA_BUILD_SYSROOT=$(xcrun --show-sdk-path)" >> $GITHUB_ENV
-
       - name: Conda package (Unix)
         shell: bash -l {0}
-        env:
-          MACOSX_DEPLOYMENT_TARGET: "11.0"
-          CONDA_BUILD_SYSROOT: "/Applications/Xcode_14.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
-          CC: clang
-          CXX: clang++
-          CFLAGS: "-isysroot /Applications/Xcode_14.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
-          CXXFLAGS: "-isysroot /Applications/Xcode_14.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
         run: |
           conda install conda-build
           python setup.py sdist
