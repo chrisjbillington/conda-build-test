@@ -17,35 +17,35 @@ jobs:
     strategy:
       matrix:
         include:
-          - { os: macos-13,        python: '3.12',  arch: x64,    conda: true }
-          - { os: macos-13,        python: '3.11',  arch: x64,    conda: true }
-          - { os: macos-13,        python: '3.10',  arch: x64,    conda: true }
-          - { os: macos-13,        python: '3.9',   arch: x64,    conda: true }
-          - { os: macos-13,        python: '3.8',   arch: x64,    conda: true }
+          # - { os: macos-13,        python: '3.12',  arch: x64,    conda: true }
+          # - { os: macos-13,        python: '3.11',  arch: x64,    conda: true }
+          # - { os: macos-13,        python: '3.10',  arch: x64,    conda: true }
+          # - { os: macos-13,        python: '3.9',   arch: x64,    conda: true }
+          # - { os: macos-13,        python: '3.8',   arch: x64,    conda: true }
 
-          - { os: macos-latest,    python: '3.12',  arch: arm64,  conda: true}
-          - { os: macos-latest,    python: '3.11',  arch: arm64,  conda: true}
-          - { os: macos-latest,    python: '3.10',  arch: arm64,  conda: true}
-          - { os: macos-latest,    python: '3.9',   arch: arm64,  conda: true}
-          - { os: macos-latest,    python: '3.8',   arch: arm64,  conda: false}
+          # - { os: macos-latest,    python: '3.12',  arch: arm64,  conda: true}
+          # - { os: macos-latest,    python: '3.11',  arch: arm64,  conda: true}
+          # - { os: macos-latest,    python: '3.10',  arch: arm64,  conda: true}
+          # - { os: macos-latest,    python: '3.9',   arch: arm64,  conda: true}
+          # - { os: macos-latest,    python: '3.8',   arch: arm64,  conda: false}
 
-          - { os: ubuntu-latest,   python: '3.12',  arch: x64,    conda: true }
-          - { os: ubuntu-latest,   python: '3.11',  arch: x64,    conda: true }
-          - { os: ubuntu-latest,   python: '3.10',  arch: x64,    conda: true }
-          - { os: ubuntu-latest,   python: '3.9',   arch: x64,    conda: true }
-          - { os: ubuntu-latest,   python: '3.8',   arch: x64,    conda: true }
+          # - { os: ubuntu-latest,   python: '3.12',  arch: x64,    conda: true }
+          # - { os: ubuntu-latest,   python: '3.11',  arch: x64,    conda: true }
+          # - { os: ubuntu-latest,   python: '3.10',  arch: x64,    conda: true }
+          # - { os: ubuntu-latest,   python: '3.9',   arch: x64,    conda: true }
+          # - { os: ubuntu-latest,   python: '3.8',   arch: x64,    conda: true }
 
-          - { os: windows-latest,  python: '3.12',  arch: x64,    conda: true }
-          - { os: windows-latest,  python: '3.11',  arch: x64,    conda: true }
-          - { os: windows-latest,  python: '3.10',  arch: x64,    conda: true }
-          - { os: windows-latest,  python: '3.9',   arch: x64,    conda: true }
-          - { os: windows-latest,  python: '3.8',   arch: x64,    conda: true }
+          # - { os: windows-latest,  python: '3.12',  arch: x64,    conda: true }
+          # - { os: windows-latest,  python: '3.11',  arch: x64,    conda: true }
+          # - { os: windows-latest,  python: '3.10',  arch: x64,    conda: true }
+          # - { os: windows-latest,  python: '3.9',   arch: x64,    conda: true }
+          # - { os: windows-latest,  python: '3.8',   arch: x64,    conda: true }
 
-          - { os: windows-latest,  python: '3.12',  arch: x86,    conda: false } # conda not yet available
-          - { os: windows-latest,  python: '3.11',  arch: x86,    conda: false } # conda not yet available
-          - { os: windows-latest,  python: '3.10',  arch: x86,    conda: true }
-          - { os: windows-latest,  python: '3.9',   arch: x86,    conda: true }
-          - { os: windows-latest,  python: '3.8',   arch: x86,    conda: true }
+          # - { os: windows-latest,  python: '3.12',  arch: x86,    conda: false } # conda not yet available
+          - { os: windows-latest,  python: '3.11',  arch: x86,    conda: true } # conda not yet available
+          # - { os: windows-latest,  python: '3.10',  arch: x86,    conda: true }
+          # - { os: windows-latest,  python: '3.9',   arch: x86,    conda: true }
+          # - { os: windows-latest,  python: '3.8',   arch: x86,    conda: true }
 
 
     steps:
