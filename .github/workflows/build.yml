@@ -12,8 +12,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - { os: macos-13,         python: '3.12',  arch: x64 }
-          - { os: ubuntu-latest,    python: '3.12',  arch: x64 }
+          - { os: macos-13,         python: '3.11',  arch: x64 }
+          - { os: ubuntu-latest,    python: '3.11',  arch: x64 }
 
     steps:
       - name: Checkout
