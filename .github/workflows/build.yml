@@ -64,7 +64,7 @@ jobs:
           fi
           # Use newer compiler toolchains from conda-forge on macOS
           # otherwise anaconda toolchain is too old for recent macOS SDKs
-          if [ $PURE == false && ${{ runner.os }} == macOS]; then
+          if [ $PURE == false && ${{ runner.os }} == macOS ]; then
               CONDA_BUILD_ARGS+=" --channels conda-forge"
           fi
           echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
