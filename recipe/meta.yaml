@@ -1,26 +1,26 @@
+{% set name = "hello" %}
+{% set version = "0.1.0" %}
+
 package:
-  name: hello
-  version: 0.1.0
+  name: {{ name|lower }}
+  version: {{ version }}
 
 source:
-  url: ../dist/hello-0.1.0.tar.gz
+  url: ../dist/{{ name }}-{{ version }}.tar.gz
 
 build:
-  script: {{ PYTHON }} -m pip install .
   number: 0
+  script: {{ PYTHON }} -m pip install . -vv
 
 requirements:
   build:
     - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
-
   host:
-    - python
+    - python 3.12.*
     - pip
-    - wheel
-
+    - setuptools
   run:
-    - python
+    - python 3.12.*
 
 about:
   home: http://github.com/chrisjbillington/conda-build-test
