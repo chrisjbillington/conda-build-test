@@ -25,7 +25,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
-          python-version: ${{ matrix.python }}
+          # python-version: ${{ matrix.python }}
           architecture: ${{ matrix.arch }}
           miniconda-version: "latest"
           auto-activate-base: true
