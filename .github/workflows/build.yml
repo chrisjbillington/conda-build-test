@@ -5,6 +5,11 @@ on:
     branches:
       - master
 
+env:
+  # Configuration for a package with compiled extensions:
+  PURE: false
+  NOARCH: false
+
 jobs:
   build:
     name: Build
@@ -24,21 +29,49 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set Variables for Conda Build
+        if: matrix.conda
+        shell: bash
+        run: |
+          CONDA_BUILD_ARGS=""
+          if [ $NOARCH == true ]; then
+              CONDA_BUILD_ARGS+= --noarch
+          fi
+          echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
+
+      - name: Use newer conda-forge compiler toolchains on macos
+        if: (matrix.conda && runner.os != 'macOS')
+        shell: bash
+        run: |
+          if [ $PURE == false ]; then
+              CONDA_BUILD_ARGS+= --channels conda-forge
+          fi
+          echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
+
       - name: Install Miniconda
+        if: matrix.conda
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python }}
           architecture: ${{ matrix.arch }}
           miniconda-version: "latest"
-          # auto-activate-base: true
-          # activate-environment: ""
 
       - name: Conda package (Unix)
+        if: (matrix.conda && runner.os != 'Windows')
         shell: bash -l {0}
         run: |
+          conda config --add channels conda-forge
           conda install -c labscript-suite setuptools-conda
-          setuptools-conda build --channels conda-forge . 
+          setuptools-conda build $CONDA_BUILD_ARGS .
+
+      - name: Conda Package (Windows)
+        if: (matrix.conda && runner.os == 'Windows')
+        shell: cmd /C CALL {0}
+        run: |
+          conda config --add channels conda-forge && ^
+          conda install -c labscript-suite setuptools-conda && ^
+          setuptools-conda build %CONDA_BUILD_ARGS% --croot ${{ runner.temp }}\cb .
 
       - name: Upload Artifact
         if: matrix.conda
