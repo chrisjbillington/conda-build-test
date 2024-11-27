@@ -1,0 +1,30 @@
+package:
+  name: hello
+  version: 0.1.0
+
+source:
+  url: ../hello-0.1.0.tar.gz
+  sha256: a96e5e65a12017d800bfa95755e3ce43574fb7663ce0b8e36c31c26e713d07d9
+
+build:
+  script: {{ PYTHON }} -m pip install .
+  number: 0
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+
+  host:
+    - python
+    - pip
+    - wheel
+
+  run:
+    - python
+
+about:
+  home: http://github.com/chrisjbillington/conda-build-test
+  summary: 'Test module for building conda packages'
+  license: 'BSD'
+  license_file: ../LICENSE
