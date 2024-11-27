@@ -11,16 +11,18 @@ source:
 build:
   number: 0
   script: {{ PYTHON }} -m pip install . -vv
+  ignore_run_exports:
+    - python
 
 requirements:
   build:
     - {{ compiler('c') }}
   host:
-    - python 3.12.*
+    - python {{ python }}
     - pip
     - setuptools
   run:
-    - python 3.12.*
+    - python
 
 about:
   home: http://github.com/chrisjbillington/conda-build-test
