@@ -70,18 +70,17 @@ jobs:
           if [ ${{ runner.os }} == Windows ]; then
               # Short path to minimise odds of hitting Windows max path length
               CONDA_BUILD_ARGS+=" --croot ${{ runner.temp }}\cb"
-            if [ $PURE == false ]; then
+          fi
+          if [ $PURE == false ]; then
               # Use version of visual studio available on the GitHub Actions runner:
               cat > ~/conda_build_config.yaml << 'EOL'
-              c_compiler:
-                - vs2022
-              cxx_compiler:
-                - vs2022
+              c_compiler    # [win]
+                - vs2022    # [win]
+              cxx_compiler: # [win]
+                - vs2022    # [win]
               EOL
-            fi
           fi
-         echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
-
+          echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
 
       - name: Install Miniconda
         if: matrix.conda
