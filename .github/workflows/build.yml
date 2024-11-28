@@ -16,11 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-          - { os: ubuntu-latest,   arch: x64 }
-          - { os: windows-latest,  arch: x64 }
-          - { os: macos-13,        arch: x64 }
-          - { os: macos-latest,    arch: arm64 }
+        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
     env:
       CONDA_PYTHON: '3.8,3.9,3.10,3.11,3.12,3.13'
       CIBW_BUILD: 'cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*'
@@ -41,38 +37,37 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Python build tools
+      - name: Install Python Build Tools
         run: python -m pip install --upgrade pip setuptools wheel build cibuildwheel
 
       - name: Source Distribution
         if: strategy.job-index == 0
         run: python -m build -s .
 
-      - name: Wheel Distribution (pure)
+      - name: Wheel Distribution (Pure)
         if: env.PURE == 'true'
         run: python -m build -w .
 
-      - name: Wheel Distribution (impure)
+      - name: Wheel Distribution (Impure)
         if: env.PURE == 'false'
         run: cibuildwheel --output-dir dist
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os }}-${{ matrix.arch }}
+          name: dist-${{ matrix.os }}
           path: ./dist
 
       - name: Install Miniforge
         uses: conda-incubator/setup-miniconda@v3
         with:
-          architecture: ${{ matrix.arch }}
           miniforge-version: "latest"
           auto-update-conda: true
           conda-remove-defaults: true
           auto-activate-base: true
           activate-environment: ""
 
-      - name: Configure conda build
+      - name: Configure Conda Build
         shell: bash
         run: |
           if [ $NOARCH == true ]; then
@@ -86,23 +81,15 @@ jobs:
           fi
           echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
 
-      - name: Conda package # (Unix)
-        # if: (runner.os != 'Windows')
+      - name: Conda package
         shell: bash -l {0}
         run: |
           conda install -c labscript-suite setuptools-conda
           setuptools-conda build $CONDA_BUILD_ARGS .
 
-      # - name: Conda Package (Windows)
-      #   if: (runner.os == 'Windows')
-      #   shell: cmd /C CALL {0}
-      #   run: |
-      #     conda install -c labscript-suite setuptools-conda && ^
-      #     setuptools-conda build %CONDA_BUILD_ARGS% .
-
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: conda_packages-${{ matrix.os }}-${{ matrix.arch }}
+          name: conda_packages-${{ matrix.os }}
           path: ./conda_packages
 
