@@ -52,7 +52,7 @@ jobs:
           - { os: windows-latest,  python: '3.9',   arch: x86,    conda: false }
           - { os: windows-latest,  python: '3.8',   arch: x86,    conda: false }
 
-    if: github.repository == 'chrisjbillington/desktop-app'
+    if: github.repository == 'chrisjbillington/conda-build-test'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
