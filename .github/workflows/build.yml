@@ -62,6 +62,16 @@ jobs:
           name: dist-${{ matrix.os }}-${{ matrix.arch }}
           path: ./dist
 
+      - name: Install Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          architecture: ${{ matrix.arch }}
+          miniforge-version: "latest"
+          auto-update-conda: true
+          conda-remove-defaults: true
+          auto-activate-base: true
+          activate-environment: ""
+
       - name: Configure conda build
         shell: bash
         run: |
@@ -76,29 +86,19 @@ jobs:
           fi
           echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
 
-      - name: Install Miniconda
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          architecture: ${{ matrix.arch }}
-          miniforge-version: "latest"
-          auto-update-conda: true
-          conda-remove-defaults: true
-          auto-activate-base: true
-          activate-environment: ""
-
-      - name: Conda package (Unix)
-        if: (runner.os != 'Windows')
+      - name: Conda package # (Unix)
+        # if: (runner.os != 'Windows')
         shell: bash -l {0}
         run: |
           conda install -c labscript-suite setuptools-conda
           setuptools-conda build $CONDA_BUILD_ARGS .
 
-      - name: Conda Package (Windows)
-        if: (runner.os == 'Windows')
-        shell: cmd /C CALL {0}
-        run: |
-          conda install -c labscript-suite setuptools-conda && ^
-          setuptools-conda build %CONDA_BUILD_ARGS% .
+      # - name: Conda Package (Windows)
+      #   if: (runner.os == 'Windows')
+      #   shell: cmd /C CALL {0}
+      #   run: |
+      #     conda install -c labscript-suite setuptools-conda && ^
+      #     setuptools-conda build %CONDA_BUILD_ARGS% .
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
