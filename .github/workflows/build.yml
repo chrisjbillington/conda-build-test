@@ -87,6 +87,7 @@ jobs:
         if: (matrix.conda && runner.os != 'Windows')
         shell: bash -l {0}
         run: |
+          conda install conda-forge-pinning
           conda install -c labscript-suite/label/test setuptools-conda
           setuptools-conda build $CONDA_BUILD_ARGS .
 
@@ -94,6 +95,7 @@ jobs:
         if: (matrix.conda && runner.os == 'Windows')
         shell: cmd /C CALL {0}
         run: |
+          conda install conda-forge-pinning
           conda install -c labscript-suite/label/test setuptools-conda && ^
           setuptools-conda build %CONDA_BUILD_ARGS% --croot ${{ runner.temp }}\cb .
 
