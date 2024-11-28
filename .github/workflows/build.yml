@@ -95,7 +95,7 @@ jobs:
         if: (matrix.conda && runner.os == 'Windows')
         shell: cmd /C CALL {0}
         run: |
-          conda install conda-forge-pinning
+          conda install conda-forge-pinning && ^
           conda install -c labscript-suite/label/test setuptools-conda && ^
           setuptools-conda build %CONDA_BUILD_ARGS% --croot ${{ runner.temp }}\cb .
 
@@ -105,3 +105,4 @@ jobs:
         with:
           name: conda_packages-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.arch }}
           path: ./conda_packages
+          if-no-files-found: error
