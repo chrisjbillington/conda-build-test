@@ -93,24 +93,14 @@ jobs:
         if: matrix.conda
         shell: bash
         run: |
-          CONDA_BUILD_ARGS="--pythons=${{ matrix.python }}"
           if [ $NOARCH == true ]; then
-              CONDA_BUILD_ARGS+=" --noarch"
+              CONDA_BUILD_ARGS="--noarch"
+          else
+              CONDA_BUILD_ARGS="--pythons=${{ matrix.python }}"
           fi
           if [ ${{ runner.os }} == Windows ]; then
               # Short path to minimise odds of hitting Windows max path length
               CONDA_BUILD_ARGS+=" --croot ${{ runner.temp }}\cb"
-          fi
-          # Use version of visual studio available on the GitHub Actions runner:
-          IMPURE_CONDA_BUILD_CONFIG=$(cat << EOF
-          c_compiler:   # [win]
-            - vs2022    # [win]
-          cxx_compiler: # [win]
-            - vs2022    # [win]
-          EOF
-          )
-          if [ $PURE == false ]; then
-              echo "$IMPURE_CONDA_BUILD_CONFIG" > ~/conda_build_config.yaml
           fi
           echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
 
