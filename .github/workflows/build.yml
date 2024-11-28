@@ -59,7 +59,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set setuptools-conda build arguments
+      - name: Configure setuptools-conda build
         if: matrix.conda
         shell: bash
         run: |
@@ -70,8 +70,18 @@ jobs:
           if [ ${{ runner.os }} == Windows ]; then
               # Short path to minimise odds of hitting Windows max path length
               CONDA_BUILD_ARGS+=" --croot ${{ runner.temp }}\cb"
-          fi 
-          echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
+            if [ $PURE == false ]; then
+              # Use version of visual studio available on the GitHub Actions runner:
+              cat > ~/conda_build_config.yaml << 'EOL'
+              c_compiler:
+                - vs2022
+              cxx_compiler:
+                - vs2022
+              EOL
+            fi
+          fi
+         echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
+
 
       - name: Install Miniconda
         if: matrix.conda
@@ -87,16 +97,14 @@ jobs:
         if: (matrix.conda && runner.os != 'Windows')
         shell: bash -l {0}
         run: |
-          conda install conda-forge-pinning
-          conda install -c labscript-suite/label/test setuptools-conda
+          conda install -c labscript-suite setuptools-conda
           setuptools-conda build $CONDA_BUILD_ARGS .
 
       - name: Conda Package (Windows)
         if: (matrix.conda && runner.os == 'Windows')
         shell: cmd /C CALL {0}
         run: |
-          conda install conda-forge-pinning && ^
-          conda install -c labscript-suite/label/test setuptools-conda && ^
+          conda install -c labscript-suite setuptools-conda && ^
           setuptools-conda build %CONDA_BUILD_ARGS% --croot ${{ runner.temp }}\cb .
 
       - name: Upload Artifact
