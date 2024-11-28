@@ -17,14 +17,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - { os: ubuntu-latest,   arch: x64,    conda: true }
-          - { os: macos-13,        arch: x64,    conda: true }
-          - { os: macos-latest,    arch: arm64,  conda: true }
-          - { os: windows-latest,  arch: x64,    conda: true }
-          # - { os: windows-latest,  arch: x86,    conda: false }
+          - { os: ubuntu-latest,   arch: x64 }
+          - { os: windows-latest,  arch: x64 }
+          - { os: macos-13,        arch: x64 }
+          - { os: macos-latest,    arch: arm64 }
     env:
       CONDA_PYTHON: '3.8,3.9,3.10,3.11,3.12,3.13'
-      CIBW_PYTHON: 'cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*'
+      CIBW_BUILD: 'cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*'
 
     if: github.repository == 'chrisjbillington/conda-build-test'
     steps:
@@ -64,7 +63,6 @@ jobs:
           path: ./dist
 
       - name: Configure conda build
-        if: matrix.conda
         shell: bash
         run: |
           if [ $NOARCH == true ]; then
@@ -79,7 +77,6 @@ jobs:
           echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
 
       - name: Install Miniconda
-        if: matrix.conda
         uses: conda-incubator/setup-miniconda@v3
         with:
           architecture: ${{ matrix.arch }}
@@ -90,21 +87,20 @@ jobs:
           activate-environment: ""
 
       - name: Conda package (Unix)
-        if: (matrix.conda && runner.os != 'Windows')
+        if: (runner.os != 'Windows')
         shell: bash -l {0}
         run: |
           conda install -c labscript-suite setuptools-conda
           setuptools-conda build $CONDA_BUILD_ARGS .
 
       - name: Conda Package (Windows)
-        if: (matrix.conda && runner.os == 'Windows')
+        if: (runner.os == 'Windows')
         shell: cmd /C CALL {0}
         run: |
           conda install -c labscript-suite setuptools-conda && ^
           setuptools-conda build %CONDA_BUILD_ARGS% .
 
       - name: Upload Artifact
-        if: matrix.conda
         uses: actions/upload-artifact@v4
         with:
           name: conda_packages-${{ matrix.os }}-${{ matrix.arch }}
