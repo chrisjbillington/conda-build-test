@@ -73,7 +73,7 @@ jobs:
           fi
           # Use version of visual studio available on the GitHub Actions runner:
           IMPURE_CONDA_BUILD_CONFIG=$(cat << EOF
-          c_compiler    # [win]
+          c_compiler:   # [win]
             - vs2022    # [win]
           cxx_compiler: # [win]
             - vs2022    # [win]
