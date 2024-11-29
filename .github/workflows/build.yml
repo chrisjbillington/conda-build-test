@@ -30,7 +30,7 @@ jobs:
       CONDA_PYTHONS: '3.8,3.9,3.10,3.11,3.12,3.13'
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-latest-large]
 
     # # Configuration for a package with no compiled extensions, but which has
     # # dependencies that differ by platform or Python version.
