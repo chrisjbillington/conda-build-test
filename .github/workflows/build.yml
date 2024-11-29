@@ -9,7 +9,7 @@ on:
 
 env:
   PACKAGE_NAME: conda-build-test
-  GITHUB_REPO = chrisjbillington/conda-build-test
+  GITHUB_REPO: chrisjbillington/conda-build-test
 
 jobs:
   build:
