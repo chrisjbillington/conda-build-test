@@ -206,9 +206,8 @@ jobs:
             conda_packages/*/*
 
       - name: Publish to Anaconda main label
-        if: secrets.ANACONDA_API_TOKEN != ''
+        if: (contains(github.ref, '/tags') && secrets.ANACONDA_API_TOKEN != '')
         shell: bash -l {0}
-        if: contains(github.ref, '/tags')
         run: |
           anaconda \
             --token ${{ secrets.ANACONDA_API_TOKEN }} \
