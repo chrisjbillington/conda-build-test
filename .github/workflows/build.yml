@@ -7,8 +7,6 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
 
-env:
-  PACKAGE_NAME: conda-build-test
 
 jobs:
   build:
@@ -128,3 +126,93 @@ jobs:
           name: conda_packages-${{ matrix.os }}
           path: ./conda_packages
           if-no-files-found: error
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dist*
+          path: ./dist
+          merge-multiple: true
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: conda_packages-*
+          path: ./conda_packages
+          merge-multiple: true
+
+      # - name: Get Version Number
+      #   if: contains(github.ref, '/tags')
+      #   run: |
+      #     VERSION="${GITHUB_REF/refs\/tags\/v/}"
+      #     echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      # - name: Create GitHub Release and Upload Release Asset
+      #   if: contains(github.ref, '/tags')
+      #   uses: softprops/action-gh-release@v2
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.event.ref }}
+      #     name: ${{ env.PACKAGE_NAME }} ${{ env.VERSION }}
+      #     draft: true
+      #     prerelease: ${{ contains(github.event.ref, 'rc') }}
+      #     files: ./dist/${{ env.PACKAGE_NAME }}-${{ env.VERSION }}.tar.gz
+
+      - name: Publish on TestPyPI
+        if: secrets.testpypi != ''
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.testpypi }}
+          repository-url: https://test.pypi.org/legacy/
+
+      - name: Publish on PyPI
+        if: (contains(github.ref, '/tags') && secrets.testpypi != '')
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.pypi }}
+
+      - name: Install Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: "latest"
+          auto-update-conda: true
+          conda-remove-defaults: true
+          auto-activate-base: true
+          activate-environment: ""
+
+      - name: Install Anaconda cloud client
+        shell: bash -l {0}
+        run: conda install anaconda-client
+
+      - name: Publish to Anaconda test label
+        if: "(!contains(github.ref, '/tags') && secrets.ANACONDA_API_TOKEN != '')"
+        shell: bash -l {0}
+        run: |
+          anaconda \
+            --token ${{ secrets.ANACONDA_API_TOKEN }} \
+            upload \
+            --skip-existing \
+            --user $ANACONDA_USER \
+            --label test \
+            conda_packages/*/*
+
+      - name: Publish to Anaconda main label
+        if: secrets.ANACONDA_API_TOKEN != ''
+        shell: bash -l {0}
+        if: contains(github.ref, '/tags')
+        run: |
+          anaconda \
+            --token ${{ secrets.ANACONDA_API_TOKEN }} \
+            upload \
+            --skip-existing \
+            --user $ANACONDA_USER \
+            conda_packages/*/*
