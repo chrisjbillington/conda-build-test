@@ -27,29 +27,31 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
 
-    # Configuration for a package with no compiled extensions, but which has
-    # dependencies that differ by platform or Python version.
-    # * A source distribution will be built on ubuntu-latest.
-    # * A pure wheel distribution will be built on ubuntu-latest
-    # * Conda packages will be built on each OS in the build matrix, targeting Python
-    #   versions specified in CONDA_PYTHONS.
-    PURE_WHEEL: true
-    CONDA_NOARCH: false
-    CONDA_PYTHONS: '3.8,3.9,3.10,3.11,3.12,3.13'
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
+    # # Configuration for a package with no compiled extensions, but which has
+    # # dependencies that differ by platform or Python version.
+    # # * A source distribution will be built on ubuntu-latest.
+    # # * A pure wheel distribution will be built on ubuntu-latest
+    # # * Conda packages will be built on each OS in the build matrix, targeting Python
+    # #   versions specified in CONDA_PYTHONS.
+    # env:
+    #   PURE_WHEEL: true
+    #   CONDA_NOARCH: false
+    #   CONDA_PYTHONS: '3.8,3.9,3.10,3.11,3.12,3.13'
+    # strategy:
+    #   matrix:
+    #     os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
 
-    # Configuration for a package with no extensions and the same dependencies on all
-    # platforms and Python versions.
-    # * A source distribution will be built on ubuntu-latest.
-    # * A pure wheel distribution will be built on ubuntu-latest
-    # * A noarch conda package will be built on ubuntu-latest
-    PURE_WHEEL: true
-    CONDA_NOARCH: true
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+    # # Configuration for a package with no extensions and the same dependencies on all
+    # # platforms and Python versions.
+    # # * A source distribution will be built on ubuntu-latest.
+    # # * A pure wheel distribution will be built on ubuntu-latest
+    # # * A noarch conda package will be built on ubuntu-latest
+    # env:
+    #   PURE_WHEEL: true
+    #   CONDA_NOARCH: true
+    # strategy:
+    #   matrix:
+    #     os: [ubuntu-latest]
 
     #### end build configuration section ####
 
