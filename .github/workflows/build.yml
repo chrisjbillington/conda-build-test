@@ -82,7 +82,7 @@ jobs:
 
       - name: Wheel Distribution (impure)
         if: env.PURE_WHEEL == 'false'
-        uses: pypa/cibuildwheel@v2
+        uses: pypa/cibuildwheel@v2.22
         with:
           output-dir: dist
 
