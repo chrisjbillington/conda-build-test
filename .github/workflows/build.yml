@@ -5,21 +5,54 @@ on:
     branches:
       - master
 
-env:
-  # Configuration for a package with compiled extensions:
-  PURE: false
-  NOARCH: false
-
 jobs:
   build:
     name: Build
     runs-on: ${{ matrix.os }}
+
+    #### build configuration section. Pick one config and comment out the other two ####
+
+    # Configuration for a package with compiled extensions.
+    # * A source distribution will be built on ubuntu-latest.
+    # * A wheel distribution will be built on each OS in the build matrix, targeting
+    #   Python versions specified in CIBW_BUILD.
+    # * A conda package will be built on each OS in the build matrix, targeting Python
+    #   versions specified in CONDA_PYTHONS.
+    env:
+      PURE_WHEEL: false
+      CONDA_NOARCH: false
+      CIBW_BUILD: 'cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*'
+      CONDA_PYTHONS: '3.8,3.9,3.10,3.11,3.12,3.13'
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
-    env:
-      CONDA_PYTHONS: '3.8,3.9,3.10,3.11,3.12,3.13'
-      CIBW_BUILD: 'cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*'
+
+    # Configuration for a package with no compiled extensions, but which has
+    # dependencies that differ by platform or Python version.
+    # * A source distribution will be built on ubuntu-latest.
+    # * A pure wheel distribution will be built on ubuntu-latest
+    # * Conda packages will be built on each OS in the build matrix, targeting Python
+    #   versions specified in CONDA_PYTHONS.
+    PURE_WHEEL: true
+    CONDA_NOARCH: false
+    CONDA_PYTHONS: '3.8,3.9,3.10,3.11,3.12,3.13'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
+
+    # Configuration for a package with no extensions and the same dependencies on all
+    # platforms and Python versions.
+    # * A source distribution will be built on ubuntu-latest.
+    # * A pure wheel distribution will be built on ubuntu-latest
+    # * A noarch conda package will be built on ubuntu-latest
+    needed.
+    PURE_WHEEL: true
+    CONDA_NOARCH: true
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    #### end build configuration section ####
 
     if: github.repository == 'chrisjbillington/conda-build-test'
     steps:
@@ -41,11 +74,11 @@ jobs:
         run: python -m build -s .
 
       - name: Wheel Distribution (pure)
-        if: env.PURE == 'true'
+        if: (env.PURE_WHEEL == 'true' && strategy.job-index == 0)
         run: python -m build -w .
 
       - name: Wheel Distribution (impure)
-        if: env.PURE == 'false'
+        if: env.PURE_WHEEL == 'false'
         run: cibuildwheel --output-dir dist
 
       - name: Upload Artifact
@@ -53,6 +86,7 @@ jobs:
         with:
           name: dist-${{ matrix.os }}
           path: ./dist
+          if-no-files-found: error
 
       - name: Install Miniforge
         uses: conda-incubator/setup-miniconda@v3
@@ -66,7 +100,7 @@ jobs:
       - name: Configure Conda Build
         shell: bash
         run: |
-          if [ $NOARCH == true ]; then
+          if [ $CONDA_NOARCH == true ]; then
               CONDA_BUILD_ARGS="--noarch"
           else
               CONDA_BUILD_ARGS="--pythons=$CONDA_PYTHONS"
@@ -88,4 +122,4 @@ jobs:
         with:
           name: conda_packages-${{ matrix.os }}
           path: ./conda_packages
-
+          if-no-files-found: error
