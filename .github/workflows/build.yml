@@ -60,8 +60,6 @@ jobs:
 
     #### end build configuration section ####
 
-    # if: github.repository == 'chrisjbillington/conda-build-test'
-    if: github.repository == vars.EXPECTED_REPO
     steps:
       - name: Checkout
         uses: actions/checkout@v4
