@@ -45,7 +45,6 @@ jobs:
     # * A source distribution will be built on ubuntu-latest.
     # * A pure wheel distribution will be built on ubuntu-latest
     # * A noarch conda package will be built on ubuntu-latest
-    needed.
     PURE_WHEEL: true
     CONDA_NOARCH: true
     strategy:
