@@ -10,10 +10,10 @@ on:
 
 
 jobs:
-  check-build-type:
+  configure:
     runs-on: ubuntu-latest
     outputs:
-      needs_multi_os: ${{ steps.check.outputs.multi_os }}
+      multi_os: ${{ steps.check.outputs.multi_os }}
     steps:
       - id: check
         run: |
@@ -25,19 +25,13 @@ jobs:
     needs: check-build-type
     strategy:
       matrix:
-        os: ${{ fromJSON(needs.check-build-type.outputs.needs_multi_os == 'true' && '["ubuntu-latest", "windows-latest", "macos-latest", "macos-13"]' || '["ubuntu-latest"]') }}
+        os: ${{ fromJSON(needs.configure.outputs.multi_os == 'true' && '["ubuntu-latest", "windows-latest", "macos-latest", "macos-13"]' || '["ubuntu-latest"]') }}
     runs-on: ${{ matrix.os }}
+    steps:
+      - name: Print
+        shell: bash
+        run: echo "hello from some OS"
 
-
-# jobs:
-#   check-build-type:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - id: check
-#         run: |
-#           # Your logic to determine if multi-OS is needed
-#           echo "multi_os=true" >> $GITHUB_OUTPUT
 
 
 # jobs:
