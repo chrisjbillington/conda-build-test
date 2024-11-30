@@ -84,7 +84,7 @@ jobs:
           echo "BUILD_OS_LIST=$BUILD_OS_LIST" >> $GITHUB_OUTPUT
 
       - name: Configure releases and uploads:
-        id: releases_and_uploads:
+        id: releases_and_uploads
         run: |
           if ${{ contains(github.ref, '/tags') }}; then
             RELEASE=true
