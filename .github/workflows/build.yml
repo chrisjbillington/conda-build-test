@@ -28,7 +28,7 @@ jobs:
 
       - name: Configure
         run: |
-          set -e
+          python -m build -s .
           PKGNAME=$(pkginfo --single -f name .)
           PKGVER=$(pkginfo --single -f version .)
           echo $PKNAME
