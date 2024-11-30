@@ -9,9 +9,34 @@ on:
 
 
 jobs:
+  configure:
+    name: Configure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Configure build and release
+        shell: bash
+        run: |
+            python -m pip install --upgrade pip setuptools wheel build pkginfo
+            PKGNAME=$(pkginfo --single -f name .)
+            PKGVER=$(pkginfo --single -f version .)
+            echo $PKNAME
+            echo $PKGVER
+
+
   build:
     name: Build
     runs-on: ${{ matrix.os }}
+    needs: [configure]
 
     #### build configuration section. Pick one config and comment out the other two ####
 
@@ -63,6 +88,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      # - name: Ignore Tags
+      #   if: github.event.ref_type == 'push' && contains(github.ref, '/tags')
+      #   run: git tag -d $(git tag --points-at HEAD)
 
       - name: Install Python
         uses: actions/setup-python@v5
