@@ -22,7 +22,7 @@ jobs:
 
 
   build-and-test:
-    needs: check-build-type
+    needs: configure
     strategy:
       matrix:
         os: ${{ fromJSON(needs.configure.outputs.multi_os == 'true' && '["ubuntu-latest", "windows-latest", "macos-latest", "macos-13"]' || '["ubuntu-latest"]') }}
