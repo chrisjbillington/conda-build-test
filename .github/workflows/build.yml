@@ -42,60 +42,44 @@ env:
 
 jobs:
   configure:
+    name: Configure
     runs-on: ubuntu-latest
     outputs:
-      BUILD_OS_LIST: ${{ steps.check.outputs.BUILD_OS_LIST }}
+      BUILD_OS_LIST: ${{ steps.build_os_list.outputs.BUILD_OS_LIST }}
+      PKGNAME: ${{ steps.pkginfo.outputs.PKGNAME }}
+      PKGVER: ${{ steps.pkginfo.outputs.PKGVER }}
+
     steps:
-      - id: check
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Python tools
+        run: python -m pip install --upgrade pip setuptools wheel build pkginfo
+
+      - name: Get package info
+        id: pkginfo
+        run: |
+          python -m build -s .
+          PKGNAME=$(pkginfo --single -f name .)
+          PKGVER=$(pkginfo --single -f version .)
+          echo "PKGNAME=$PKGNAME" >> $GITHUB_OUTPUT
+          echo "PKGVER=$PKGVER" >> $GITHUB_OUTPUT
+
+      - name: Configure build OS list
+        id: build_os_list
         run: |
           if [[ "$PURE_WHEEL" == "false" || "$CONDA_NOARCH" == "false" ]]; then
             echo "BUILD_OS_LIST=$OS_LIST_ALL" >> $GITHUB_OUTPUT
           else
             echo "BUILD_OS_LIST=$OS_LIST_UBUNTU" >> $GITHUB_OUTPUT
           fi
-
-  # build:
-  #   needs: configure
-  #   strategy:
-  #     matrix:
-  #       os: ${{ fromJSON(needs.configure.outputs.BUILD_OS_LIST) }}
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #     - name: Print
-  #       shell: bash
-  #       run: |
-  #         echo "hello from some OS"
-  #         echo PURE_WHEEL is $PURE_WHEEL
-  #         echo CONDA_NOARCH is $CONDA_NOARCH
-
-# jobs:
-#   configure:
-#     name: Configure
-#     runs-on: ubuntu-latest
-#     outputs:
-#       pure: ${{ steps.check.outputs.pure }}
-#       noarch: 
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
-#         with:
-#           fetch-depth: 0
-
-#       - name: Install Python
-#         uses: actions/setup-python@v5
-#         with:
-#           python-version: '3.x'
-
-#       - name: Install Python tools
-#         run: python -m pip install --upgrade pip setuptools wheel build pkginfo
-
-#       - name: Configure
-#         run: |
-#           python -m build -s .
-#           PKGNAME=$(pkginfo --single -f name .)
-#           PKGVER=$(pkginfo --single -f version .)
-#           echo $PKGNAME
-#           echo $PKGVER
 
 
   build:
@@ -121,22 +105,22 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Python Build Tools
+      - name: Install Python tools
         run: python -m pip install --upgrade pip setuptools wheel build cibuildwheel
 
-      - name: Source Distribution
+      - name: Source distribution
         if: strategy.job-index == 0
         run: python -m build -s .
 
-      - name: Wheel Distribution (pure)
+      - name: Wheel distribution (pure)
         if: (env.PURE_WHEEL == 'true' && strategy.job-index == 0)
         run: python -m build -w .
 
-      - name: Wheel Distribution (impure)
+      - name: Wheel distribution (impure)
         if: env.PURE_WHEEL == 'false'
         run: cibuildwheel --output-dir dist
 
-      - name: Upload Artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.os }}
@@ -152,7 +136,7 @@ jobs:
           auto-activate-base: true
           activate-environment: ""
 
-      - name: Configure Conda Build
+      - name: Configure Conda build
         shell: bash
         run: |
           if [ $CONDA_NOARCH == true ]; then
@@ -172,7 +156,7 @@ jobs:
           conda install -c labscript-suite setuptools-conda
           setuptools-conda build $CONDA_BUILD_ARGS .
 
-      - name: Upload Artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: conda_packages-${{ matrix.os }}
