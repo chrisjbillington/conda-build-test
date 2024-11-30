@@ -44,7 +44,7 @@ jobs:
   configure:
     runs-on: ubuntu-latest
     outputs:
-      os_list: ${{ steps.check.outputs.os_list }}
+      BUILD_OS_LIST: ${{ steps.check.outputs.BUILD_OS_LIST }}
     steps:
       - id: check
         run: |
