@@ -18,7 +18,7 @@ jobs:
       - id: check
         run: |
           # Your logic to determine if multi-OS is needed
-          echo "multi_os=true" >> $GITHUB_OUTPUT
+          echo "multi_os=false" >> $GITHUB_OUTPUT
 
 
   build-and-test:
