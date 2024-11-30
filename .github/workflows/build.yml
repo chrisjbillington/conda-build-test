@@ -195,7 +195,7 @@ jobs:
       #     files: ./dist/${{ env.PACKAGE_NAME }}-${{ env.VERSION }}.tar.gz
 
       - name: Publish on TestPyPI
-        if: secrets.testpypi != ''
+        # if: secrets.testpypi != ''
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
@@ -203,7 +203,8 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
 
       - name: Publish on PyPI
-        if: (contains(github.ref, '/tags') && secrets.testpypi != '')
+        if: contains(github.ref, '/tags') 
+        # if: (contains(github.ref, '/tags') && secrets.testpypi != '')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
@@ -223,7 +224,8 @@ jobs:
         run: conda install anaconda-client
 
       - name: Publish to Anaconda test label
-        if: "(!contains(github.ref, '/tags') && secrets.ANACONDA_API_TOKEN != '')"
+        if: "!contains(github.ref, '/tags')"
+        # if: "(!contains(github.ref, '/tags') && secrets.ANACONDA_API_TOKEN != '')"
         shell: bash -l {0}
         run: |
           anaconda \
@@ -235,7 +237,8 @@ jobs:
             conda_packages/*/*
 
       - name: Publish to Anaconda main label
-        if: (contains(github.ref, '/tags') && secrets.ANACONDA_API_TOKEN != '')
+        if: contains(github.ref, '/tags')
+        # if: (contains(github.ref, '/tags') && secrets.ANACONDA_API_TOKEN != '')
         shell: bash -l {0}
         run: |
           anaconda \
