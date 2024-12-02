@@ -167,16 +167,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: print env vars
-        run: |
-          echo $PYTHONS
-          echo $DEFAULTPYTHON
-          echo $CIBW_BUILD
-          echo $PKGNAME
-          echo $PKGVER
-          echo $PURE
-          echo $HAS_ENV_MARKERS
-
       - name: Install Python
         uses: actions/setup-python@v5
         with:
