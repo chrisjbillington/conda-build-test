@@ -72,14 +72,14 @@ jobs:
         run: |
           pip install ci-helper
 
+          # Second-most recent supported Python version:
+          DEFAULTPYTHON=$(ci-helper defaultpython)
+
           # All supported Python versions:
           PYTHONS=$(ci-helper pythons)
 
-          # Env variable for `cibuildwheel` to build for all supported CPython versions:
+          # Env var for `cibuildwheel` to build for all supported CPython versions:
           CIBW_BUILD=$(ci-helper pythons --cibw)
-
-          # Second-most recent supported Python version:
-          DEFAULTPYTHON=$(ci-helper defaultpython)
 
           # Package name and version:
           PKGNAME=$(ci-helper distinfo name .)
@@ -90,6 +90,9 @@ jobs:
           PURE=$(ci-helper distinfo is_pure .)
           HAS_ENV_MARKERS=$(ci-helper distinfo has_env_markers .)
 
+          echo "DEFAULTPYTHON=$DEFAULTPYTHON" >> $GITHUB_OUTPUT
+          echo "PYTHONS=$PYTHONS" >> $GITHUB_OUTPUT
+          echo "CIBW_BUILD=$CIBW_BUILD" >> $GITHUB_OUTPUT
           echo "PKGNAME=$PKGNAME" >> $GITHUB_OUTPUT
           echo "PKGVER=$PKGVER" >> $GITHUB_OUTPUT
           echo "PURE=$PURE" >> $GITHUB_OUTPUT      
@@ -201,11 +204,11 @@ jobs:
         run: python -m build -s .
 
       - name: Wheel distribution (pure)
-        if: env.PURE == true && strategy.job-index == 0
+        if: env.PURE == 'true' && strategy.job-index == 0
         run: python -m build -w .
 
       - name: Wheel distribution (impure)
-        if: env.PURE == false
+        if: env.PURE == 'false'
         run: cibuildwheel --output-dir dist
 
       - name: Upload artifact
@@ -280,7 +283,7 @@ jobs:
           merge-multiple: true
 
       - name: Create GitHub Release and Upload Release Asset
-        if: env.RELEASE == true
+        if: env.RELEASE == 'true'
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -292,7 +295,7 @@ jobs:
           files: ./dist/${{ env.PKGNAME }}-${{ env.PKGVER }}.tar.gz
 
       - name: Publish on TestPyPI
-        if: env.TESTPYPI_UPLOAD == true
+        if: env.TESTPYPI_UPLOAD == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
@@ -300,7 +303,7 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
 
       - name: Publish on PyPI
-        if: env.PYPI_UPLOAD == true
+        if: env.PYPI_UPLOAD == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
@@ -320,7 +323,7 @@ jobs:
         run: conda install anaconda-client
 
       - name: Publish to Anaconda test label
-        if: env.TEST_ANACONDA_UPLOAD == true
+        if: env.TEST_ANACONDA_UPLOAD == 'true'
         shell: bash -l {0}
         run: |
           anaconda \
@@ -332,7 +335,7 @@ jobs:
             conda_packages/*/*
 
       - name: Publish to Anaconda main label
-        if: env.ANACONDA_UPLOAD == true
+        if: env.ANACONDA_UPLOAD == 'true'
         shell: bash -l {0}
         run: |
           anaconda \
