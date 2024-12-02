@@ -10,45 +10,51 @@ on:
 env:
   OS_LIST_UBUNTU: '["ubuntu-latest"]'
   OS_LIST_ALL: '["ubuntu-latest", "windows-latest", "macos-latest", "macos-13"]'
-  CIBW_BUILD: 'cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*'
-  CONDA_PYTHONS: '3.8,3.9,3.10,3.11,3.12,3.13'
 
-
-  # Configuration for a package with compiled extensions.
-  # * A source distribution will be built on ubuntu-latest.
-  # * A wheel distribution will be built on each OS in the build matrix, targeting
-  #   Python versions specified in CIBW_BUILD.
-  # * A conda package will be built on each OS in the build matrix, targeting Python
-  #   versions specified in CONDA_PYTHONS.
-  PURE_WHEEL: false
-  CONDA_NOARCH: false
-
-  # # Configuration for a package with no compiled extensions, but which has
-  # # dependencies that differ by platform or Python version.
+  # # Configuration for a package with compiled extensions.
   # # * A source distribution will be built on ubuntu-latest.
-  # # * A pure wheel distribution will be built on ubuntu-latest
-  # # * Conda packages will be built on each OS in the build matrix, targeting Python
+  # # * A wheel distribution will be built on each OS in the build matrix, targeting
+  # #   Python versions specified in CIBW_BUILD.
+  # # * A conda package will be built on each OS in the build matrix, targeting Python
   # #   versions specified in CONDA_PYTHONS.
-  # PURE_WHEEL: true
+  # PURE_WHEEL: false
   # CONDA_NOARCH: false
 
-  # # Configuration for a package with no extensions and the same dependencies on all
-  # # platforms and Python versions.
-  # # * A source distribution will be built on ubuntu-latest.
-  # # * A pure wheel distribution will be built on ubuntu-latest
-  # # * A noarch conda package will be built on ubuntu-latest
-  # PURE_WHEEL: true
-  # CONDA_NOARCH: true
+  # # # Configuration for a package with no compiled extensions, but which has
+  # # # dependencies that differ by platform or Python version.
+  # # # * A source distribution will be built on ubuntu-latest.
+  # # # * A pure wheel distribution will be built on ubuntu-latest
+  # # # * Conda packages will be built on each OS in the build matrix, targeting Python
+  # # #   versions specified in CONDA_PYTHONS.
+  # # PURE_WHEEL: true
+  # # CONDA_NOARCH: false
+
+  # # # Configuration for a package with no extensions and the same dependencies on all
+  # # # platforms and Python versions.
+  # # # * A source distribution will be built on ubuntu-latest.
+  # # # * A pure wheel distribution will be built on ubuntu-latest
+  # # # * A noarch conda package will be built on ubuntu-latest
+  # # PURE_WHEEL: true
+  # # CONDA_NOARCH: true
 
 jobs:
   configure:
-    name: Configure
+    name: Configure workflow run
     runs-on: ubuntu-latest
     outputs:
+      PYTHONS: ${{ steps.config_build.outputs.PYTHONS }}
+      DEFAULTPYTHON: ${{ steps.config_build.outputs.DEFAULTPYTHON }}
+      CIBW_BUILD: ${{ steps.config_build.outputs.CIBW_BUILD }}
+      PKGNAME: ${{ steps.config_build.outputs.PKGNAME }}
+      PKGVER: ${{ steps.config_build.outputs.PKGVER }}
+      PURE: ${{ steps.config_build.outputs.PURE }}
+      HAS_ENV_MARKERS: ${{ steps.config_build.outputs.HAS_ENV_MARKERS }}
       BUILD_OS_LIST: ${{ steps.build_os_list.outputs.BUILD_OS_LIST }}
-      PKGNAME: ${{ steps.pkginfo.outputs.PKGNAME }}
-      PKGVER: ${{ steps.pkginfo.outputs.PKGVER }}
       RELEASE: ${{ steps.releases_and_uploads.outputs.RELEASE }}
+      TESTPYPI_UPLOAD: ${{ steps.releases_and_uploads.outputs.TESTPYPI_UPLOAD }}
+      PYPI_UPLOAD: ${{ steps.releases_and_uploads.outputs.PYPI_UPLOAD }}
+      TEST_ANACONDA_UPLOAD: ${{ steps.releases_and_uploads.outputs.TEST_ANACONDA_UPLOAD }}
+      ANACONDA_UPLOAD: ${{ steps.releases_and_uploads.outputs.ANACONDA_UPLOAD }}
 
     steps:
       - name: Checkout
@@ -61,37 +67,88 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Python tools
-        run: python -m pip install --upgrade pip setuptools wheel build pkginfo
-
-      - name: Get package info
-        id: pkginfo
+      - name: Configure build
+        id: config_build
         run: |
-          python -m build -s .
-          PKGNAME=$(pkginfo --single -f name .)
-          PKGVER=$(pkginfo --single -f version .)
+          pip install ci-helper
+
+          # All supported Python versions:
+          PYTHONS=$(ci-helper pythons)
+
+          # Env variable for `cibuildwheel` to build for all supported CPython versions:
+          CIBW_BUILD=$(ci-helper pythons --cibw)
+
+          # Second-most recent supported Python version:
+          DEFAULTPYTHON=$(ci-helper defaultpython)
+
+          # Package name and version:
+          PKGNAME=$(ci-helper distinfo name .)
+          PKGVER=$(ci-helper distinfo version .)
+
+          # Whether the package is pure python, and whether its requirements depend
+          # on platform or Python version:
+          PURE=$(ci-helper distinfo is_pure .)
+          HAS_ENV_MARKERS=$(ci-helper distinfo has_env_markers .)
+
           echo "PKGNAME=$PKGNAME" >> $GITHUB_OUTPUT
           echo "PKGVER=$PKGVER" >> $GITHUB_OUTPUT
+          echo "PURE=$PURE" >> $GITHUB_OUTPUT      
+          echo "HAS_ENV_MARKERS=$HAS_ENV_MARKERS" >> $GITHUB_OUTPUT   
 
       - name: Configure build OS list
         id: build_os_list
         run: |
-          if [[ $PURE_WHEEL == "true" || $CONDA_NOARCH == "true" ]]; then
+          if [[ $PURE == true || $HAS_ENV_MARKERS == false ]]; then
             BUILD_OS_LIST=$OS_LIST_UBUNTU
           else
             BUILD_OS_LIST=$OS_LIST_ALL
           fi
+
           echo "BUILD_OS_LIST=$BUILD_OS_LIST" >> $GITHUB_OUTPUT
 
-      - name: Configure releases and uploads
+      - name: Configure release and uploads
         id: releases_and_uploads
         run: |
+          # Release if a tag was pushed:
           if ${{ contains(github.ref, '/tags') }}; then
             RELEASE=true
           else
             RELEASE=false
           fi
+
+          # Upload to Test PyPI if the repo is configured with a token
+          if [ ${{ secrets.testpypi }} != '' ]; then
+            TESTPYPI_UPLOAD=true
+          else
+            TESTPYPI_UPLOAD=false
+          fi
+
+          # Upload to PyPI if it's a release and the repo is configured with a token:
+          if [[ $RELEASE == true && ${{ secrets.testpypi }} != '' ]; then
+            PYPI_UPLOAD=true
+          else
+            PYPI_UPLOAD=false
+          fi
+
+          # Upload to conda test label if *not* a release and the repo has a token:
+          if [[ $RELEASE == false && ${{ secrets.ANACONDA_API_TOKEN }} != '' ]; then
+            TEST_ANACONDA_UPLOAD=true
+          else
+            TEST_ANACONDA_UPLOAD=false
+          fi
+
+          # Upload to conda main label if it's a release and the repo has a token: 
+          if [[ $RELEASE == true && ${{ secrets.ANACONDA_API_TOKEN }} != '' ]; then
+            ANACONDA_UPLOAD=true
+          else
+            ANACONDA_UPLOAD=false
+          fi
+
           echo "RELEASE=$RELEASE" >> $GITHUB_OUTPUT
+          echo "TESTPYPI_UPLOAD=$TESTPYPI_UPLOAD" >> $GITHUB_OUTPUT
+          echo "PYPI_UPLOAD=$PYPI_UPLOAD" >> $GITHUB_OUTPUT
+          echo "TEST_ANACONDA_UPLOAD=$TEST_ANACONDA_UPLOAD" >> $GITHUB_OUTPUT
+          echo "ANACONDA_UPLOAD=$ANACONDA_UPLOAD" >> $GITHUB_OUTPUT
 
 
   build:
@@ -102,20 +159,29 @@ jobs:
       matrix:
         os: ${{ fromJSON(needs.configure.outputs.BUILD_OS_LIST) }}
 
+    env:
+      PYTHONS: ${{ needs.configure.outputs.PYTHONS }}
+      DEFAULTPYTHON: ${{ needs.configure.outputs.DEFAULTPYTHON }}
+      CIBW_BUILD: ${{ needs.configure.outputs.CIBW_BUILD }}
+      PKGNAME: ${{ needs.configure.outputs.PKGNAME }}
+      PKGVER: ${{ needs.configure.outputs.PKGVER }}
+      PURE: ${{ needs.configure.outputs.PURE }}
+      HAS_ENV_MARKERS: ${{ needs.configure.outputs.HAS_ENV_MARKERS }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # - name: Ignore Tags
-      #   if: github.event.ref_type == 'push' && contains(github.ref, '/tags')
-      #   run: git tag -d $(git tag --points-at HEAD)
+      - name: Ignore Tags on push events
+        if: github.event.ref_type == 'push' && contains(github.ref, '/tags')
+        run: git tag -d $(git tag --points-at HEAD)
 
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: ${{ env.DEFAULTPYTHON }}
 
       - name: Install Python tools
         run: python -m pip install --upgrade pip setuptools wheel build cibuildwheel
@@ -125,11 +191,11 @@ jobs:
         run: python -m build -s .
 
       - name: Wheel distribution (pure)
-        if: (env.PURE_WHEEL == 'true' && strategy.job-index == 0)
+        if: env.PURE == true && strategy.job-index == 0
         run: python -m build -w .
 
       - name: Wheel distribution (impure)
-        if: env.PURE_WHEEL == 'false'
+        if: env.PURE == false
         run: cibuildwheel --output-dir dist
 
       - name: Upload artifact
@@ -151,10 +217,10 @@ jobs:
       - name: Configure Conda build
         shell: bash
         run: |
-          if [ $CONDA_NOARCH == true ]; then
+          if [[ $PURE && $HAS_ENV_MARKERS == false ]]; then
               CONDA_BUILD_ARGS="--noarch"
           else
-              CONDA_BUILD_ARGS="--pythons=$CONDA_PYTHONS"
+              CONDA_BUILD_ARGS="--pythons=$PYTHONS"
           fi
           if [ ${{ runner.os }} == Windows ]; then
               # Short path to minimise odds of hitting Windows max path length
@@ -175,94 +241,93 @@ jobs:
           path: ./conda_packages
           if-no-files-found: error
 
-  # release:
-  #   name: Release
-  #   runs-on: ubuntu-latest
-  #   needs: [configure, build]
-  #   steps:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [configure, build]
+    env:
+      PKGNAME: ${{ needs.configure.outputs.PKGNAME }}
+      PKGVER: ${{ needs.configure.outputs.PKGVER }}
+      RELEASE: ${{ needs.configure.outputs.RELEASE }}
+      TESTPYPI_UPLOAD: ${{ needs.configure.outputs.TESTPYPI_UPLOAD }}
+      PYPI_UPLOAD: ${{ needs.configure.outputs.PYPI_UPLOAD }}
+      TEST_ANACONDA_UPLOAD: ${{ needs.configure.outputs.TEST_ANACONDA_UPLOAD }}
+      ANACONDA_UPLOAD: ${{ needs.configure.outputs.ANACONDA_UPLOAD }}
 
-  #     - name: Download Artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         pattern: dist*
-  #         path: ./dist
-  #         merge-multiple: true
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dist*
+          path: ./dist
+          merge-multiple: true
 
-  #     - name: Download Artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         pattern: conda_packages-*
-  #         path: ./conda_packages
-  #         merge-multiple: true
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: conda_packages-*
+          path: ./conda_packages
+          merge-multiple: true
 
-  #     # - name: Get Version Number
-  #     #   if: contains(github.ref, '/tags')
-  #     #   run: |
-  #     #     VERSION="${GITHUB_REF/refs\/tags\/v/}"
-  #     #     echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Create GitHub Release and Upload Release Asset
+        if: env.RELEASE == true
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.ref }}
+          name: ${{ env.PKGNAME }} ${{ env.PKGVER }}
+          draft: true
+          prerelease: ${{ contains(github.event.ref, 'rc') }}
+          files: ./dist/${{ env.PKGNAME }}-${{ env.PKGVER }}.tar.gz
 
-  #     # - name: Create GitHub Release and Upload Release Asset
-  #     #   if: contains(github.ref, '/tags')
-  #     #   uses: softprops/action-gh-release@v2
-  #     #   env:
-  #     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     #   with:
-  #     #     tag_name: ${{ github.event.ref }}
-  #     #     name: ${{ env.PACKAGE_NAME }} ${{ env.VERSION }}
-  #     #     draft: true
-  #     #     prerelease: ${{ contains(github.event.ref, 'rc') }}
-  #     #     files: ./dist/${{ env.PACKAGE_NAME }}-${{ env.VERSION }}.tar.gz
+      - name: Publish on TestPyPI
+        if: env.TESTPYPI_UPLOAD == true
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.testpypi }}
+          repository-url: https://test.pypi.org/legacy/
 
-  #     - name: Publish on TestPyPI
-  #       # if: secrets.testpypi != ''
-  #       uses: pypa/gh-action-pypi-publish@release/v1
-  #       with:
-  #         user: __token__
-  #         password: ${{ secrets.testpypi }}
-  #         repository-url: https://test.pypi.org/legacy/
+      - name: Publish on PyPI
+        if: env.PYPI_UPLOAD == true
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.pypi }}
 
-  #     - name: Publish on PyPI
-  #       if: contains(github.ref, '/tags') 
-  #       # if: (contains(github.ref, '/tags') && secrets.testpypi != '')
-  #       uses: pypa/gh-action-pypi-publish@release/v1
-  #       with:
-  #         user: __token__
-  #         password: ${{ secrets.pypi }}
+      - name: Install Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: "latest"
+          auto-update-conda: true
+          conda-remove-defaults: true
+          auto-activate-base: true
+          activate-environment: ""
 
-  #     - name: Install Miniforge
-  #       uses: conda-incubator/setup-miniconda@v3
-  #       with:
-  #         miniforge-version: "latest"
-  #         auto-update-conda: true
-  #         conda-remove-defaults: true
-  #         auto-activate-base: true
-  #         activate-environment: ""
+      - name: Install Anaconda cloud client
+        shell: bash -l {0}
+        run: conda install anaconda-client
 
-  #     - name: Install Anaconda cloud client
-  #       shell: bash -l {0}
-  #       run: conda install anaconda-client
+      - name: Publish to Anaconda test label
+        if: env.TEST_ANACONDA_UPLOAD == true
+        shell: bash -l {0}
+        run: |
+          anaconda \
+            --token ${{ secrets.ANACONDA_API_TOKEN }} \
+            upload \
+            --skip-existing \
+            --user $ANACONDA_USER \
+            --label test \
+            conda_packages/*/*
 
-  #     - name: Publish to Anaconda test label
-  #       if: "!contains(github.ref, '/tags')"
-  #       # if: "(!contains(github.ref, '/tags') && secrets.ANACONDA_API_TOKEN != '')"
-  #       shell: bash -l {0}
-  #       run: |
-  #         anaconda \
-  #           --token ${{ secrets.ANACONDA_API_TOKEN }} \
-  #           upload \
-  #           --skip-existing \
-  #           --user $ANACONDA_USER \
-  #           --label test \
-  #           conda_packages/*/*
-
-  #     - name: Publish to Anaconda main label
-  #       if: contains(github.ref, '/tags')
-  #       # if: (contains(github.ref, '/tags') && secrets.ANACONDA_API_TOKEN != '')
-  #       shell: bash -l {0}
-  #       run: |
-  #         anaconda \
-  #           --token ${{ secrets.ANACONDA_API_TOKEN }} \
-  #           upload \
-  #           --skip-existing \
-  #           --user $ANACONDA_USER \
-  #           conda_packages/*/*
+      - name: Publish to Anaconda main label
+        if: env.ANACONDA_UPLOAD == true
+        shell: bash -l {0}
+        run: |
+          anaconda \
+            --token ${{ secrets.ANACONDA_API_TOKEN }} \
+            upload \
+            --skip-existing \
+            --user $ANACONDA_USER \
+            conda_packages/*/*
