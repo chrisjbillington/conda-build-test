@@ -124,8 +124,13 @@ jobs:
           echo "TEST_ANACONDA_UPLOAD=$TEST_ANACONDA_UPLOAD" >> $GITHUB_OUTPUT
           echo "ANACONDA_UPLOAD=$ANACONDA_UPLOAD" >> $GITHUB_OUTPUT
 
+          echo
+          echo "======================="
           echo "Workflow configuration:"
+          echo "-----------------------"
           cat $GITHUB_OUTPUT
+          echo "======================="
+          echo
 
 
   build:
