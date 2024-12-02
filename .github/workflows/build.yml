@@ -65,8 +65,8 @@ jobs:
           PURE=$(ci-helper distinfo is_pure .)
           HAS_ENV_MARKERS=$(ci-helper distinfo has_env_markers .)
 
-          # List of OSs we need to run the build job on, and Python versions
-          # conda-build should target:
+          # List of OSs we need to run the build job on, and Python versions conda-build
+          # should target:
           if [[ $PURE == false || $HAS_ENV_MARKERS == true ]]; then
             BUILD_OS_LIST=$OS_LIST_ALL
             CONDA_BUILD_ARGS="--pythons=$PYTHONS"
@@ -82,32 +82,45 @@ jobs:
             RELEASE=false
           fi
 
-          # Upload to Test PyPI if the repo is configured with a token
+          # What secrets is the repo configured with?
           if [ '${{ secrets.testpypi }}' != '' ]; then
-            TESTPYPI_UPLOAD=true
+            HAVE_TESTPYPI_TOKEN=true
           else
-            TESTPYPI_UPLOAD=false
+            HAVE_TESTPYPI_TOKEN=false
+          fi
+          if [ '${{ secrets.pypi }}' != '' ]; then
+            HAVE_PYPI_TOKEN=true
+          else
+            HAVE_PYPI_TOKEN=false
+          fi
+          if [ '${{ secrets.ANACONDA_API_TOKEN }}' != '' ]; then
+            HAVE_ANACONDA_TOKEN=true
+          else
+            HAVE_ANACONDA_TOKEN=false
           fi
 
-          # Upload to PyPI if it's a release and the repo is configured with a token:
-          if [[ $RELEASE == true && '${{ secrets.testpypi }}' != '' ]]; then
+          # Upload releases to PyPI and Anaconda if the repo has appropriate tokens:
+          if [[ $RELEASE == true && $HAVE_PYPI_TOKEN]]; then
             PYPI_UPLOAD=true
           else
             PYPI_UPLOAD=false
           fi
-
-          # Upload to conda test label if *not* a release and the repo has a token:
-          if [[ $RELEASE == false && '${{ secrets.ANACONDA_API_TOKEN }}' != '' ]]; then
-            TEST_ANACONDA_UPLOAD=true
-          else
-            TEST_ANACONDA_UPLOAD=false
-          fi
-
-          # Upload to conda main label if it's a release and the repo has a token: 
-          if [[ $RELEASE == true && '${{ secrets.ANACONDA_API_TOKEN }}' != '' ]]; then
+          if [[ $RELEASE == true && $HAVE_ANACONDA_TOKEN]]; then
             ANACONDA_UPLOAD=true
           else
             ANACONDA_UPLOAD=false
+          fi
+
+          # Upload non-releases to TestPyPI and Anaconda test label if repo has tokens:
+          if [[ $RELEASE == false && $HAVE_TESTPYPI_TOKEN]]; then
+            TESTPYPI_UPLOAD=true
+          else
+            TESTPYPI_UPLOAD=false
+          fi
+          if [[ $RELEASE == false && $HAVE_ANACONDA_TOKEN]]; then
+            TEST_ANACONDA_UPLOAD=true
+          else
+            TEST_ANACONDA_UPLOAD=false
           fi
 
           echo "DEFAULTPYTHON=$DEFAULTPYTHON" >> $GITHUB_OUTPUT
@@ -153,10 +166,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      # - name: Ignore Tags on push events
-      #   if: github.event.ref_type == 'push' && contains(github.ref, '/tags')
-      #   run: git tag -d $(git tag --points-at HEAD)
 
       - name: print env vars
         run: |
