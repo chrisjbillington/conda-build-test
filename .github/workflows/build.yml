@@ -117,28 +117,28 @@ jobs:
           fi
 
           # Upload to Test PyPI if the repo is configured with a token
-          if [ ${{ secrets.testpypi }} != '' ]; then
+          if [ '${{ secrets.testpypi }}' != '' ]; then
             TESTPYPI_UPLOAD=true
           else
             TESTPYPI_UPLOAD=false
           fi
 
           # Upload to PyPI if it's a release and the repo is configured with a token:
-          if [[ $RELEASE == true && ${{ secrets.testpypi }} != '' ]]; then
+          if [[ $RELEASE == true && '${{ secrets.testpypi }}' != '' ]]; then
             PYPI_UPLOAD=true
           else
             PYPI_UPLOAD=false
           fi
 
           # Upload to conda test label if *not* a release and the repo has a token:
-          if [[ $RELEASE == false && ${{ secrets.ANACONDA_API_TOKEN }} != '' ]]; then
+          if [[ $RELEASE == false && '${{ secrets.ANACONDA_API_TOKEN }}' != '' ]]; then
             TEST_ANACONDA_UPLOAD=true
           else
             TEST_ANACONDA_UPLOAD=false
           fi
 
           # Upload to conda main label if it's a release and the repo has a token: 
-          if [[ $RELEASE == true && ${{ secrets.ANACONDA_API_TOKEN }} != '' ]]; then
+          if [[ $RELEASE == true && '${{ secrets.ANACONDA_API_TOKEN }}' != '' ]]; then
             ANACONDA_UPLOAD=true
           else
             ANACONDA_UPLOAD=false
