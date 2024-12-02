@@ -100,24 +100,24 @@ jobs:
           fi
 
           # Upload releases to PyPI and Anaconda if the repo has appropriate tokens:
-          if [[ $RELEASE == true && $HAVE_PYPI_TOKEN]]; then
+          if [[ $RELEASE == true && $HAVE_PYPI_TOKEN == true ]]; then
             PYPI_UPLOAD=true
           else
             PYPI_UPLOAD=false
           fi
-          if [[ $RELEASE == true && $HAVE_ANACONDA_TOKEN]]; then
+          if [[ $RELEASE == true && $HAVE_ANACONDA_TOKEN == true ]]; then
             ANACONDA_UPLOAD=true
           else
             ANACONDA_UPLOAD=false
           fi
 
           # Upload non-releases to TestPyPI and Anaconda test label if repo has tokens:
-          if [[ $RELEASE == false && $HAVE_TESTPYPI_TOKEN]]; then
+          if [[ $RELEASE == false && $HAVE_TESTPYPI_TOKEN == true ]]; then
             TESTPYPI_UPLOAD=true
           else
             TESTPYPI_UPLOAD=false
           fi
-          if [[ $RELEASE == false && $HAVE_ANACONDA_TOKEN]]; then
+          if [[ $RELEASE == false && $HAVE_ANACONDA_TOKEN == true ]]; then
             TEST_ANACONDA_UPLOAD=true
           else
             TEST_ANACONDA_UPLOAD=false
