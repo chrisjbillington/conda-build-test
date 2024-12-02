@@ -11,31 +11,6 @@ env:
   OS_LIST_UBUNTU: '["ubuntu-latest"]'
   OS_LIST_ALL: '["ubuntu-latest", "windows-latest", "macos-latest", "macos-13"]'
 
-  # # Configuration for a package with compiled extensions.
-  # # * A source distribution will be built on ubuntu-latest.
-  # # * A wheel distribution will be built on each OS in the build matrix, targeting
-  # #   Python versions specified in CIBW_BUILD.
-  # # * A conda package will be built on each OS in the build matrix, targeting Python
-  # #   versions specified in CONDA_PYTHONS.
-  # PURE_WHEEL: false
-  # CONDA_NOARCH: false
-
-  # # # Configuration for a package with no compiled extensions, but which has
-  # # # dependencies that differ by platform or Python version.
-  # # # * A source distribution will be built on ubuntu-latest.
-  # # # * A pure wheel distribution will be built on ubuntu-latest
-  # # # * Conda packages will be built on each OS in the build matrix, targeting Python
-  # # #   versions specified in CONDA_PYTHONS.
-  # # PURE_WHEEL: true
-  # # CONDA_NOARCH: false
-
-  # # # Configuration for a package with no extensions and the same dependencies on all
-  # # # platforms and Python versions.
-  # # # * A source distribution will be built on ubuntu-latest.
-  # # # * A pure wheel distribution will be built on ubuntu-latest
-  # # # * A noarch conda package will be built on ubuntu-latest
-  # # PURE_WHEEL: true
-  # # CONDA_NOARCH: true
 
 jobs:
   configure:
@@ -48,7 +23,7 @@ jobs:
       PKGNAME: ${{ steps.config.outputs.PKGNAME }}
       PKGVER: ${{ steps.config.outputs.PKGVER }}
       PURE: ${{ steps.config.outputs.PURE }}
-      HAS_ENV_MARKERS: ${{ steps.config.outputs.HAS_ENV_MARKERS }}
+      CONDA_BUILD_ARGS: ${{ steps.config.outputs.CONDA_BUILD_ARGS }}
       BUILD_OS_LIST: ${{ steps.config.outputs.BUILD_OS_LIST }}
       RELEASE: ${{ steps.config.outputs.RELEASE }}
       TESTPYPI_UPLOAD: ${{ steps.config.outputs.TESTPYPI_UPLOAD }}
@@ -90,11 +65,14 @@ jobs:
           PURE=$(ci-helper distinfo is_pure .)
           HAS_ENV_MARKERS=$(ci-helper distinfo has_env_markers .)
 
-          # List of OSs we need to run the build job on:
+          # List of OSs we need to run the build job on, and Python versions
+          # conda-build should target:
           if [[ $PURE == false || $HAS_ENV_MARKERS == true ]]; then
             BUILD_OS_LIST=$OS_LIST_ALL
+            CONDA_BUILD_ARGS="--pythons=$PYTHONS"
           else
             BUILD_OS_LIST=$OS_LIST_UBUNTU
+            CONDA_BUILD_ARGS="--noarch"
           fi
 
           # Release if a tag was pushed:
@@ -138,7 +116,7 @@ jobs:
           echo "PKGNAME=$PKGNAME" >> $GITHUB_OUTPUT
           echo "PKGVER=$PKGVER" >> $GITHUB_OUTPUT
           echo "PURE=$PURE" >> $GITHUB_OUTPUT      
-          echo "HAS_ENV_MARKERS=$HAS_ENV_MARKERS" >> $GITHUB_OUTPUT   
+          echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_OUTPUT   
           echo "BUILD_OS_LIST=$BUILD_OS_LIST" >> $GITHUB_OUTPUT
           echo "RELEASE=$RELEASE" >> $GITHUB_OUTPUT
           echo "TESTPYPI_UPLOAD=$TESTPYPI_UPLOAD" >> $GITHUB_OUTPUT
@@ -162,10 +140,8 @@ jobs:
       PYTHONS: ${{ needs.configure.outputs.PYTHONS }}
       DEFAULTPYTHON: ${{ needs.configure.outputs.DEFAULTPYTHON }}
       CIBW_BUILD: ${{ needs.configure.outputs.CIBW_BUILD }}
-      PKGNAME: ${{ needs.configure.outputs.PKGNAME }}
-      PKGVER: ${{ needs.configure.outputs.PKGVER }}
       PURE: ${{ needs.configure.outputs.PURE }}
-      HAS_ENV_MARKERS: ${{ needs.configure.outputs.HAS_ENV_MARKERS }}
+      CONDA_BUILD_ARGS: ${{ needs.configure.outputs.CONDA_BUILD_ARGS }}
 
     steps:
       - name: Checkout
@@ -223,25 +199,12 @@ jobs:
           auto-activate-base: true
           activate-environment: ""
 
-      - name: Configure Conda build
-        shell: bash
-        run: |
-          if [[ $PURE && $HAS_ENV_MARKERS == false ]]; then
-              CONDA_BUILD_ARGS="--noarch"
-          else
-              CONDA_BUILD_ARGS="--pythons=$PYTHONS"
-          fi
-          if [ ${{ runner.os }} == Windows ]; then
-              # Short path to minimise odds of hitting Windows max path length
-              CONDA_BUILD_ARGS+=" --croot ${{ runner.temp }}\cb"
-          fi
-          echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_ENV
-
       - name: Conda package
         shell: bash -l {0}
         run: |
           conda install -c labscript-suite setuptools-conda
-          setuptools-conda build $CONDA_BUILD_ARGS .
+          # set croot to short path to minimise odds of hitting Windows max path length
+          setuptools-conda build --croot ${{ runner.temp }}/cb $CONDA_BUILD_ARGS .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
