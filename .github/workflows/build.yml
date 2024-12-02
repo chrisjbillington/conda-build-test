@@ -207,9 +207,12 @@ jobs:
       - name: Conda package
         shell: bash -l {0}
         run: |
+          if [ ${{ runner.os }} == Windows ]; then
+            # Short path to minimise odds of hitting Windows max path length
+            CONDA_BUILD_ARGS+=" --croot ${{ runner.temp }}\cb"
+          fi
           conda install -c labscript-suite setuptools-conda
-          # set croot to short path to minimise odds of hitting Windows max path length
-          setuptools-conda build --croot ${{ runner.temp }}/cb $CONDA_BUILD_ARGS .
+          setuptools-conda build $CONDA_BUILD_ARGS .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
