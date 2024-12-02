@@ -42,19 +42,19 @@ jobs:
     name: Configure workflow run
     runs-on: ubuntu-latest
     outputs:
-      PYTHONS: ${{ steps.config_build.outputs.PYTHONS }}
-      DEFAULTPYTHON: ${{ steps.config_build.outputs.DEFAULTPYTHON }}
-      CIBW_BUILD: ${{ steps.config_build.outputs.CIBW_BUILD }}
-      PKGNAME: ${{ steps.config_build.outputs.PKGNAME }}
-      PKGVER: ${{ steps.config_build.outputs.PKGVER }}
-      PURE: ${{ steps.config_build.outputs.PURE }}
-      HAS_ENV_MARKERS: ${{ steps.config_build.outputs.HAS_ENV_MARKERS }}
-      BUILD_OS_LIST: ${{ steps.build_os_list.outputs.BUILD_OS_LIST }}
-      RELEASE: ${{ steps.releases_and_uploads.outputs.RELEASE }}
-      TESTPYPI_UPLOAD: ${{ steps.releases_and_uploads.outputs.TESTPYPI_UPLOAD }}
-      PYPI_UPLOAD: ${{ steps.releases_and_uploads.outputs.PYPI_UPLOAD }}
-      TEST_ANACONDA_UPLOAD: ${{ steps.releases_and_uploads.outputs.TEST_ANACONDA_UPLOAD }}
-      ANACONDA_UPLOAD: ${{ steps.releases_and_uploads.outputs.ANACONDA_UPLOAD }}
+      PYTHONS: ${{ steps.config.outputs.PYTHONS }}
+      DEFAULTPYTHON: ${{ steps.config.outputs.DEFAULTPYTHON }}
+      CIBW_BUILD: ${{ steps.config.outputs.CIBW_BUILD }}
+      PKGNAME: ${{ steps.config.outputs.PKGNAME }}
+      PKGVER: ${{ steps.config.outputs.PKGVER }}
+      PURE: ${{ steps.config.outputs.PURE }}
+      HAS_ENV_MARKERS: ${{ steps.config.outputs.HAS_ENV_MARKERS }}
+      BUILD_OS_LIST: ${{ steps.config.outputs.BUILD_OS_LIST }}
+      RELEASE: ${{ steps.config.outputs.RELEASE }}
+      TESTPYPI_UPLOAD: ${{ steps.config.outputs.TESTPYPI_UPLOAD }}
+      PYPI_UPLOAD: ${{ steps.config.outputs.PYPI_UPLOAD }}
+      TEST_ANACONDA_UPLOAD: ${{ steps.config.outputs.TEST_ANACONDA_UPLOAD }}
+      ANACONDA_UPLOAD: ${{ steps.config.outputs.ANACONDA_UPLOAD }}
 
     steps:
       - name: Checkout
@@ -67,8 +67,8 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Configure build
-        id: config_build
+      - name: Configure workflow
+        id: config
         run: |
           pip install ci-helper
 
@@ -90,28 +90,13 @@ jobs:
           PURE=$(ci-helper distinfo is_pure .)
           HAS_ENV_MARKERS=$(ci-helper distinfo has_env_markers .)
 
-          echo "DEFAULTPYTHON=$DEFAULTPYTHON" >> $GITHUB_OUTPUT
-          echo "PYTHONS=$PYTHONS" >> $GITHUB_OUTPUT
-          echo "CIBW_BUILD=$CIBW_BUILD" >> $GITHUB_OUTPUT
-          echo "PKGNAME=$PKGNAME" >> $GITHUB_OUTPUT
-          echo "PKGVER=$PKGVER" >> $GITHUB_OUTPUT
-          echo "PURE=$PURE" >> $GITHUB_OUTPUT      
-          echo "HAS_ENV_MARKERS=$HAS_ENV_MARKERS" >> $GITHUB_OUTPUT   
-
-      - name: Configure build OS list
-        id: build_os_list
-        run: |
-          if [[ $PURE == true || $HAS_ENV_MARKERS == false ]]; then
-            BUILD_OS_LIST=$OS_LIST_UBUNTU
-          else
+          # List of OSs we need to run the build job on:
+          if [[ $PURE == false || $HAS_ENV_MARKERS == true ]]; then
             BUILD_OS_LIST=$OS_LIST_ALL
+          else
+            BUILD_OS_LIST=$OS_LIST_UBUNTU
           fi
 
-          echo "BUILD_OS_LIST=$BUILD_OS_LIST" >> $GITHUB_OUTPUT
-
-      - name: Configure release and uploads
-        id: releases_and_uploads
-        run: |
           # Release if a tag was pushed:
           if [ ${{ contains(github.ref, '/tags') }} == true ]; then
             RELEASE=true
@@ -147,11 +132,22 @@ jobs:
             ANACONDA_UPLOAD=false
           fi
 
+          echo "DEFAULTPYTHON=$DEFAULTPYTHON" >> $GITHUB_OUTPUT
+          echo "PYTHONS=$PYTHONS" >> $GITHUB_OUTPUT
+          echo "CIBW_BUILD=$CIBW_BUILD" >> $GITHUB_OUTPUT
+          echo "PKGNAME=$PKGNAME" >> $GITHUB_OUTPUT
+          echo "PKGVER=$PKGVER" >> $GITHUB_OUTPUT
+          echo "PURE=$PURE" >> $GITHUB_OUTPUT      
+          echo "HAS_ENV_MARKERS=$HAS_ENV_MARKERS" >> $GITHUB_OUTPUT   
+          echo "BUILD_OS_LIST=$BUILD_OS_LIST" >> $GITHUB_OUTPUT
           echo "RELEASE=$RELEASE" >> $GITHUB_OUTPUT
           echo "TESTPYPI_UPLOAD=$TESTPYPI_UPLOAD" >> $GITHUB_OUTPUT
           echo "PYPI_UPLOAD=$PYPI_UPLOAD" >> $GITHUB_OUTPUT
           echo "TEST_ANACONDA_UPLOAD=$TEST_ANACONDA_UPLOAD" >> $GITHUB_OUTPUT
           echo "ANACONDA_UPLOAD=$ANACONDA_UPLOAD" >> $GITHUB_OUTPUT
+
+          echo "Workflow configuration:"
+          echo $GITHUB_OUTPUT
 
 
   build:
