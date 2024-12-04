@@ -82,13 +82,13 @@ jobs:
             RELEASE=false
           fi
 
-          # What secrets is the repo configured with?
-          if [ '${{ secrets.testpypi }}' != '' ]; then
+          # What upload credentials is the repo configured with?
+          if [ '${{ secrets.TESTPYPI }}' != '' ]; then
             HAVE_TESTPYPI_TOKEN=true
           else
             HAVE_TESTPYPI_TOKEN=false
           fi
-          if [ '${{ secrets.pypi }}' != '' ]; then
+          if [ '${{ secrets.PYPI }}' != '' ]; then
             HAVE_PYPI_TOKEN=true
           else
             HAVE_PYPI_TOKEN=false
@@ -98,8 +98,18 @@ jobs:
           else
             HAVE_ANACONDA_TOKEN=false
           fi
+          if [ '${{ vars.ANACONDA_USER }}' != '' ]; then
+            HAVE_ANACONDA_USER=true
+          else
+            HAVE_ANACONDA_USER=false
+          fi
 
-          # Upload releases to PyPI and Anaconda if the repo has appropriate tokens:
+          if [ $HAVE_ANACONDA_TOKEN != $HAVE_ANACONDA_TOKEN ]; then
+            echo "Require both vars.ANACONDA_USER and secrets.ANACONDA_API_TOKEN"
+            exit 1
+          fi
+
+          # Upload releases to PyPI and Anaconda if the repo has creds:
           if [[ $RELEASE == true && $HAVE_PYPI_TOKEN == true ]]; then
             PYPI_UPLOAD=true
           else
@@ -111,7 +121,7 @@ jobs:
             ANACONDA_UPLOAD=false
           fi
 
-          # Upload non-releases to TestPyPI and Anaconda test label if repo has tokens:
+          # Upload non-releases to TestPyPI and Anaconda test label if repo has creds:
           if [[ $RELEASE == false && $HAVE_TESTPYPI_TOKEN == true ]]; then
             TESTPYPI_UPLOAD=true
           else
@@ -124,7 +134,6 @@ jobs:
           fi
 
           echo "DEFAULTPYTHON=$DEFAULTPYTHON" >> $GITHUB_OUTPUT
-          echo "PYTHONS=$PYTHONS" >> $GITHUB_OUTPUT
           echo "CIBW_BUILD=$CIBW_BUILD" >> $GITHUB_OUTPUT
           echo "PKGNAME=$PKGNAME" >> $GITHUB_OUTPUT
           echo "PKGVER=$PKGVER" >> $GITHUB_OUTPUT
@@ -265,7 +274,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
-          password: ${{ secrets.testpypi }}
+          password: ${{ secrets.TESTPYPI }}
           repository-url: https://test.pypi.org/legacy/
 
       - name: Publish on PyPI
@@ -273,7 +282,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
-          password: ${{ secrets.pypi }}
+          password: ${{ secrets.PYPI }}
 
       - name: Install Miniforge
         uses: conda-incubator/setup-miniconda@v3
@@ -296,7 +305,7 @@ jobs:
             --token ${{ secrets.ANACONDA_API_TOKEN }} \
             upload \
             --skip-existing \
-            --user $ANACONDA_USER \
+            --user ${{ vars.ANACONDA_USER }} \
             --label test \
             conda_packages/*/*
 
@@ -308,5 +317,5 @@ jobs:
             --token ${{ secrets.ANACONDA_API_TOKEN }} \
             upload \
             --skip-existing \
-            --user $ANACONDA_USER \
+            --user ${{ vars.ANACONDA_USER }} \
             conda_packages/*/*
