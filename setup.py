@@ -8,9 +8,10 @@ EXT_MODULES = [
     )
 ]
 
+
 setup(
     name="hello",
-    version="0.1.0",
+    use_scm_version=True,
     description="hello",
     packages=find_packages(),
     ext_modules=EXT_MODULES,
