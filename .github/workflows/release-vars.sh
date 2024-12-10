@@ -14,8 +14,8 @@ export ANACONDA_USER="labscript-suite"
 # set. Optional, all default to true.
 export PYPI_UPLOAD=""
 export TEST_PYPI_UPLOAD=""
-export ANACONDA_UPLOAD=""
-export TEST_ANACONDA_UPLOAD=""
+export ANACONDA_UPLOAD="false"
+export TEST_ANACONDA_UPLOAD="false"
 
 # Which Python version to use for pure wheel builds, sdists, and as the host Python for
 # cibuildwheel. Optional, defaults to the second-most recent minor Python version.
