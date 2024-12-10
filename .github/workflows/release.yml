@@ -24,13 +24,14 @@ jobs:
       PKGNAME: ${{ steps.config.outputs.PKGNAME }}
       PKGVER: ${{ steps.config.outputs.PKGVER }}
       PURE: ${{ steps.config.outputs.PURE }}
+      ANACONDA_USER: ${{ steps.config.outputs.ANACONDA_USER }}
       CONDA_BUILD_ARGS: ${{ steps.config.outputs.CONDA_BUILD_ARGS }}
       BUILD_OS_LIST: ${{ steps.config.outputs.BUILD_OS_LIST }}
       RELEASE: ${{ steps.config.outputs.RELEASE }}
-      TESTPYPI_UPLOAD: ${{ steps.config.outputs.TESTPYPI_UPLOAD }}
-      PYPI_UPLOAD: ${{ steps.config.outputs.PYPI_UPLOAD }}
-      TEST_ANACONDA_UPLOAD: ${{ steps.config.outputs.TEST_ANACONDA_UPLOAD }}
-      ANACONDA_UPLOAD: ${{ steps.config.outputs.ANACONDA_UPLOAD }}
+      TEST_PYPI_UPLOAD_THIS_RUN: ${{ steps.config.outputs.TESTPYPI_UPLOAD_THIS_RUN }}
+      PYPI_UPLOAD_THIS_RUN: ${{ steps.config.outputs.PYPI_UPLOAD_THIS_RUN }}
+      TEST_ANACONDA_UPLOAD_THIS_RUN: ${{ steps.config.outputs.TEST_ANACONDA_UPLOAD_THIS_RUN }}
+      ANACONDA_UPLOAD_THIS_RUN: ${{ steps.config.outputs.ANACONDA_UPLOAD_THIS_RUN }}
 
     steps:
       - name: Checkout
@@ -106,35 +107,35 @@ jobs:
           fi
 
           # Release if a tag was pushed:
-          if [ ${{ contains(github.ref, '/tags') }} == true ]; then
+          if [ "${{ contains(github.ref, '/tags') }}" == true ]; then
             RELEASE=true
           else
             RELEASE=false
           fi
 
           # What types of package uploads are enabled:
-          if [ -z "${PYPI_UPLOAD}"]; then
+          if [ -z "${PYPI_UPLOAD}" ]; then
             PYPI_UPLOAD=true
           else
             PYPI_UPLOAD=false
           fi
-          if [ -z "${TEST_PYPI_UPLOAD}"]; then
+          if [ -z "${TEST_PYPI_UPLOAD}" ]; then
             TEST_PYPI_UPLOAD=true
           else
             TEST_PYPI_UPLOAD=false
           fi
-          if [ -z "${ANACONDA_UPLOAD}"]; then
+          if [ -z "${ANACONDA_UPLOAD}" ]; then
             ANACONDA_UPLOAD=true
           else
             ANACONDA_UPLOAD=false
           fi
-          if [ -z "${TEST_ANACONDA_UPLOAD}"]; then
+          if [ -z "${TEST_ANACONDA_UPLOAD}" ]; then
             TEST_ANACONDA_UPLOAD=true
           else
             TEST_ANACONDA_UPLOAD=false
           fi
 
-          if [ ${{ github.repository }} != "${RELEASE_REPO}" ]; then
+          if [ "${{ github.repository }}" != "${RELEASE_REPO}" ]; then
             echo "Workflow repo doesn't match ${RELEASE_REPO}, disabling package uploads"
             PYPI_UPLOAD=false
             TEST_PYPI_UPLOAD=false
@@ -145,7 +146,7 @@ jobs:
           # If Anaconda uploads enabled, check necessary username and token are
           # available:
           if [[ "${ANACONDA_UPLOAD}" == true || "${TEST_ANACONDA_UPLOAD}" == true ]]; then
-            if [ -z '${{ secrets.ANACONDA_API_TOKEN }} ]; then
+            if [ -z "${{ secrets.ANACONDA_API_TOKEN }}" ]; then
               echo "Anaconda uploads enabled but ANACONDA_API_TOKEN secret not set"
               exit 1
             fi
@@ -171,7 +172,7 @@ jobs:
           if [[ "${RELEASE}" == false && "${TEST_PYPI_UPLOAD}" == true ]]; then
             TEST_PYPI_UPLOAD_THIS_RUN=true
           else
-            REST_PYPI_UPLOAD_THIS_RUN=false
+            TEST_PYPI_UPLOAD_THIS_RUN=false
           fi
           if [[ "${RELEASE}" == false && "${TEST_ANACONDA_UPLOAD}" == true ]]; then
             TEST_ANACONDA_UPLOAD_THIS_RUN=true
@@ -179,25 +180,25 @@ jobs:
             TEST_ANACONDA_UPLOAD_THIS_RUN=false
           fi
 
-          echo "DEFAULT_PYTHON=$DEFAULT_PYTHON" >> $GITHUB_OUTPUT
-          echo "CIBW_BUILD=$CIBW_BUILD" >> $GITHUB_OUTPUT
-          echo "PKGNAME=$PKGNAME" >> $GITHUB_OUTPUT
-          echo "PKGVER=$PKGVER" >> $GITHUB_OUTPUT
-          echo "PURE=$PURE" >> $GITHUB_OUTPUT
-          echo "ANACONDA_USER=$ANACONDA_USER" >> $GITHUB_OUTPUT
-          echo "CONDA_BUILD_ARGS=$CONDA_BUILD_ARGS" >> $GITHUB_OUTPUT
-          echo "BUILD_OS_LIST=$BUILD_OS_LIST" >> $GITHUB_OUTPUT
-          echo "RELEASE=$RELEASE" >> $GITHUB_OUTPUT
-          echo "TESTPYPI_UPLOAD_THIS_RUN=$TESTPYPI_UPLOAD_THIS_RUN" >> $GITHUB_OUTPUT
-          echo "PYPI_UPLOAD_THIS_RUN=$PYPI_UPLOAD_THIS_RUN" >> $GITHUB_OUTPUT
-          echo "TEST_ANACONDA_UPLOAD_THIS_RUN=$TEST_ANACONDA_UPLOAD_THIS_RUN" >> $GITHUB_OUTPUT
-          echo "ANACONDA_UPLOAD_THIS_RUN=$ANACONDA_UPLOAD_THIS_RUN" >> $GITHUB_OUTPUT
+          echo "DEFAULT_PYTHON=${DEFAULT_PYTHON}" >> "${GITHUB_OUTPUT}"
+          echo "CIBW_BUILD=${CIBW_BUILD}" >> "${GITHUB_OUTPUT}"
+          echo "PKGNAME=${PKGNAME}" >> "${GITHUB_OUTPUT}"
+          echo "PKGVER=${PKGVER}" >> "${GITHUB_OUTPUT}"
+          echo "PURE=${PURE}" >> "${GITHUB_OUTPUT}"
+          echo "ANACONDA_USER=${ANACONDA_USER}" >> "${GITHUB_OUTPUT}"
+          echo "CONDA_BUILD_ARGS=${CONDA_BUILD_ARGS}" >> "${GITHUB_OUTPUT}"
+          echo "BUILD_OS_LIST=${BUILD_OS_LIST}" >> "${GITHUB_OUTPUT}"
+          echo "RELEASE=${RELEASE}" >> "${GITHUB_OUTPUT}"
+          echo "TEST_PYPI_UPLOAD_THIS_RUN=${TEST_PYPI_UPLOAD_THIS_RUN}" >> "${GITHUB_OUTPUT}"
+          echo "PYPI_UPLOAD_THIS_RUN=${PYPI_UPLOAD_THIS_RUN}" >> "${GITHUB_OUTPUT}"
+          echo "TEST_ANACONDA_UPLOAD_THIS_RUN=${TEST_ANACONDA_UPLOAD_THIS_RUN}" >> "${GITHUB_OUTPUT}"
+          echo "ANACONDA_UPLOAD_THIS_RUN=${ANACONDA_UPLOAD_THIS_RUN}" >> "${GITHUB_OUTPUT}"
 
           echo
           echo "=========================="
           echo "Workflow run configuration:"
           echo "--------------------------"
-          cat $GITHUB_OUTPUT
+          cat "${GITHUB_OUTPUT}"
           echo "=========================="
           echo
 
@@ -310,7 +311,7 @@ jobs:
     name: Publish on Test PyPI
     runs-on: ubuntu-latest
     needs: [configure, build]
-    if: ${{ needs.configure.outputs.TESTPYPI_UPLOAD_THIS_RUN == 'true' }}
+    if: ${{ needs.configure.outputs.TEST_PYPI_UPLOAD_THIS_RUN == 'true' }}
 
     steps:
       - name: Download Artifact
