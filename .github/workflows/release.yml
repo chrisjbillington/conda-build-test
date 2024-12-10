@@ -163,9 +163,9 @@ jobs:
             PYPI_UPLOAD_THIS_RUN=false
           fi
           if [[ "${RELEASE}" == true && "${ANACONDA_UPLOAD}" == true ]]; then
-            ANACONDA_UPLOAD=true
+            ANACONDA_UPLOAD_THIS_RUN=true
           else
-            ANACONDA_UPLOAD=false
+            ANACONDA_UPLOAD_THIS_RUN=false
           fi
 
           # If enabled, upload non-releases to Test PyPI and Anaconda test label:
