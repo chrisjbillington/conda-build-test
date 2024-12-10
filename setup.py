@@ -1,5 +1,5 @@
 import os
-from setuptools import setup, find_packages, Extension
+from setuptools import setup, Extension
 
 EXT_MODULES = [
     Extension(
@@ -8,11 +8,4 @@ EXT_MODULES = [
     )
 ]
 
-
-setup(
-    name="hello",
-    use_scm_version=True,
-    description="hello",
-    packages=find_packages(),
-    ext_modules=EXT_MODULES,
-)
+setup(ext_modules=EXT_MODULES)
