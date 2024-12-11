@@ -319,7 +319,7 @@ jobs:
       PKGVER: ${{ needs.configure.outputs.PKGVER }}
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/${{ env.PKGNAME }}/${{ env.PKGVER }}
+      url: https://test.pypi.org/project/${{ env.PKGNAME }}/${{ env.PKGVER }}
     permissions:
       id-token: write
 
@@ -347,7 +347,7 @@ jobs:
       PKGVER: ${{ needs.configure.outputs.PKGVER }}
     environment:
       name: pypi
-      url: https://pypi.org/p/${{ env.PKGNAME }}/${{ env.PKGVER }}
+      url: https://pypi.org/project/${{ env.PKGNAME }}/${{ env.PKGVER }}
     permissions:
       id-token: write
 
