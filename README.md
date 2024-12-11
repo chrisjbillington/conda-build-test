@@ -28,6 +28,8 @@ Per [the docs](https://packaging.python.org/en/latest/guides/publishing-package-
 2. Go to https://pypi.org/manage/account/publishing, fill in the details and *do*
    set the optional GitHub environment to `pypi`.
 
+For both PyPI and Test PyPI, "Workflow name" is `release.yml`.
+
 #### Set up Anaconda uploads
 
 1. set `ANACONDA_USER` in `.github/workflows/release-vars.sh`, e.g:

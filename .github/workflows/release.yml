@@ -343,6 +343,11 @@ jobs:
     env:
       PKGNAME: ${{ needs.configure.outputs.PKGNAME }}
       PKGVER: ${{ needs.configure.outputs.PKGVER }}
+    environment:
+      name: pypi
+      url: https://pypi.org/p/${{ env.PKGNAME }}/${{ env.PKGVER }}
+    permissions:
+      id-token: write
 
     steps:
       - name: Download Artifact
@@ -352,10 +357,8 @@ jobs:
           path: ./dist
           merge-multiple: true
 
-      # - name: Publish on PyPI
-      #   uses: pypa/gh-action-pypi-publish@release/v1
-      #   with:
-      #     user: __token__
+      - name: Publish on PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
 
 
   test-anaconda-upload:
