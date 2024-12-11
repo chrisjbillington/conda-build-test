@@ -19,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       DEFAULT_PYTHON: ${{ steps.config.outputs.DEFAULT_PYTHON }}
-      CONDA_PYTHONS: ${{ steps.config.outputs.CONDA_PYTHONS }}
       CIBW_BUILD: ${{ steps.config.outputs.CIBW_BUILD }}
       PKGNAME: ${{ steps.config.outputs.PKGNAME }}
       PKGVER: ${{ steps.config.outputs.PKGVER }}
@@ -42,7 +41,7 @@ jobs:
       - name: Ignore Tags for non-tag pushes
         if: "!startsWith(github.ref, 'refs/tags/')"
         run: git tag -d $(git tag --points-at HEAD)
-        
+
       - name: Install Python
         uses: actions/setup-python@v5
         with:
