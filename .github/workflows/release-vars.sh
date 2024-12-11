@@ -5,7 +5,7 @@ export RELEASE_REPO="chrisjbillington/conda-build-test"
 
 # Username with which to upload conda packages. If not given, anaconda uploads are
 # skipped.
-export ANACONDA_USER="labscript-suite"
+export ANACONDA_USER="cbillington"
 
 # Whether (true or false) to upload releases to PyPI, non-releases to Test PyPI,
 # releases to Anaconda, non-releases to Anaconda test label. Only used if the repository
@@ -13,9 +13,9 @@ export ANACONDA_USER="labscript-suite"
 # Anaconda uploads require ANACONDA_USER be specified and ANACONDA_API_TOKEN secret be
 # set. Optional, all default to true.
 export PYPI_UPLOAD=""
-export TEST_PYPI_UPLOAD=""
-export ANACONDA_UPLOAD="false"
-export TEST_ANACONDA_UPLOAD="false"
+export TESTPYPI_UPLOAD=""
+export ANACONDA_UPLOAD=""
+export TEST_ANACONDA_UPLOAD=""
 
 # Which Python version to use for pure wheel builds, sdists, and as the host Python for
 # cibuildwheel. Optional, defaults to the second-most recent minor Python version.
