@@ -39,6 +39,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Ignore Tags for non-tag pushes
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        run: git tag -d $(git tag --points-at HEAD)
+        
       - name: Install Python
         uses: actions/setup-python@v5
         with:
@@ -222,6 +226,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Ignore Tags for non-tag pushes
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        run: git tag -d $(git tag --points-at HEAD)
 
       - name: Install Python
         uses: actions/setup-python@v5
