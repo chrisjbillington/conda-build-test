@@ -398,16 +398,16 @@ jobs:
         shell: bash -l {0}
         run: conda install anaconda-client
 
-      # - name: Publish to Anaconda test label
-      #   shell: bash -l {0}
-      #   run: |
-      #     anaconda \
-      #       --token ${{ secrets.ANACONDA_API_TOKEN }} \
-      #       upload \
-      #       --skip-existing \
-      #       --user ${{ needs.configure.outputs.ANACONDA_USER }} \
-      #       --label test \
-      #       conda_packages/*/*
+      - name: Publish to Anaconda test label
+        shell: bash -l {0}
+        run: |
+          anaconda \
+            --token ${{ secrets.ANACONDA_API_TOKEN }} \
+            upload \
+            --skip-existing \
+            --user ${{ needs.configure.outputs.ANACONDA_USER }} \
+            --label test \
+            conda_packages/*/*
 
 
   anaconda-upload:
@@ -437,12 +437,12 @@ jobs:
         shell: bash -l {0}
         run: conda install anaconda-client
 
-      # - name: Publish to Anaconda main
-      #   shell: bash -l {0}
-      #   run: |
-      #     anaconda \
-      #       --token ${{ secrets.ANACONDA_API_TOKEN }} \
-      #       upload \
-      #       --skip-existing \
-      #       --user ${{ needs.configure.outputs.ANACONDA_USER }} \
-      #       conda_packages/*/*
+      - name: Publish to Anaconda main
+        shell: bash -l {0}
+        run: |
+          anaconda \
+            --token ${{ secrets.ANACONDA_API_TOKEN }} \
+            upload \
+            --skip-existing \
+            --user ${{ needs.configure.outputs.ANACONDA_USER }} \
+            conda_packages/*/*
